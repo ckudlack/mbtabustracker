@@ -9,8 +9,7 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.ckudlack.mbtabustracker.models.FeedInfo;
-import com.ckudlack.mbtabustracker.models.Route;
-import com.ckudlack.mbtabustracker.models.Stop;
+import com.ckudlack.mbtabustracker.models.RouteStop;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -170,6 +169,7 @@ public class DBAdapter {
             db.execSQL(Schema.FeedInfoTable.CREATE_TABLE_SQL);
             db.execSQL(Schema.RoutesTable.CREATE_TABLE_SQL);
             db.execSQL(Schema.StopsTable.CREATE_TABLE_SQL);
+            db.execSQL(Schema.RouteStopsTable.CREATE_TABLE_SQL);
             Timber.d("Tables created!");
         }
 
@@ -178,6 +178,7 @@ public class DBAdapter {
             db.execSQL("DROP TABLE IF EXISTS " + Schema.FeedInfoTable.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + Schema.RoutesTable.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + Schema.StopsTable.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + Schema.RouteStopsTable.TABLE_NAME);
         }
 
         private static void runMigrations(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -274,29 +275,22 @@ public class DBAdapter {
         return feedInfo;
     }
 
-    public List<Stop> getStopsForRoute(Route route) {
-        List<Stop> stops = new ArrayList<>();
+    public List<RouteStop> getRouteStops(String rowType, String id) {
+        Cursor cursor = db.query(Schema.RouteStopsTable.TABLE_NAME, Schema.RouteStopsTable.ALL_COLUMNS, rowType + " = " + id, null, null, null, null);
 
-        StringBuilder sqlQueryBuilder = new StringBuilder();
-        for (String id : route.getStopIds()) {
-            sqlQueryBuilder.append(Schema.StopsTable.STOP_ID);
-            sqlQueryBuilder.append(" = ? OR ");
-        }
-
-        String preString = sqlQueryBuilder.toString();
-        String finalQuery = preString.substring(0, preString.length() - 3);
-        //TODO: Add orderBy
-        Cursor cursor = db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, finalQuery, route.getStopIds(), null, null, null);
+        List<RouteStop> routeStops = new ArrayList<>();
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
-
-                Stop stop = new Stop();
-                stop.buildFromCursor(cursor, this);
-                stops.add(stop);
+                RouteStop rs = new RouteStop();
+                rs.buildFromCursor(cursor, this);
+                routeStops.add(rs);
             }
+            cursor.close();
+            return routeStops;
+        } else {
+            cursor.close();
+            return null;
         }
-
-        return stops;
     }
 }

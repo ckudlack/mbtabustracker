@@ -1,6 +1,5 @@
 package com.ckudlack.mbtabustracker.activities;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -8,7 +7,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.Spinner;
 
 import com.ckudlack.mbtabustracker.Constants;
@@ -17,6 +15,7 @@ import com.ckudlack.mbtabustracker.R;
 import com.ckudlack.mbtabustracker.adapters.RoutesAdapter;
 import com.ckudlack.mbtabustracker.adapters.StopsAdapter;
 import com.ckudlack.mbtabustracker.application.MbtaBusTrackerApplication;
+import com.ckudlack.mbtabustracker.async.PersistRouteStopsInDbTask;
 import com.ckudlack.mbtabustracker.async.PersistRoutesInDbTask;
 import com.ckudlack.mbtabustracker.async.PersistStopsInDbTask;
 import com.ckudlack.mbtabustracker.database.DBAdapter;
@@ -26,13 +25,13 @@ import com.ckudlack.mbtabustracker.models.Direction2;
 import com.ckudlack.mbtabustracker.models.FeedInfo;
 import com.ckudlack.mbtabustracker.models.Mode;
 import com.ckudlack.mbtabustracker.models.Route;
+import com.ckudlack.mbtabustracker.models.RouteStop;
 import com.ckudlack.mbtabustracker.models.Stop;
 import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.IoUtils;
 import com.squareup.otto.Subscribe;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -72,14 +71,6 @@ public class LandingActivity extends ActionBarActivity {
             }
         });
 
-        Button b = (Button) findViewById(R.id.button);
-        b.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getAllRoutes();
-            }
-        });
-
         routesSpinner = (Spinner) findViewById(R.id.routes_spinner);
         routesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -90,13 +81,17 @@ public class LandingActivity extends ActionBarActivity {
 
                 Cursor c = routesAdapter.getCursor();
                 c.moveToPosition(position);
-                String routeId = cursor.getString(c.getColumnIndex(Schema.RoutesTable.ROUTE_ID));
                 Route route = new Route();
                 route.buildFromCursor(c, dbAdapter);
-                if (route.getStopIds() == null) {
+
+                String routeId = route.getRouteId();
+
+                List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, routeId);
+
+                if (routeStops == null) {
                     getStopsForRoute(routeId);
                 } else {
-                    stopReturned(new OttoBusEvent.StopsPersistCompletedEvent(route.getRouteId()));
+                    getStopsFromForeignKey(routeStops);
                 }
             }
 
@@ -111,12 +106,37 @@ public class LandingActivity extends ActionBarActivity {
         setRoutesSpinner();
     }
 
+    private void getStopsFromForeignKey(List<RouteStop> routeStops) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        for (int i = 0; i < routeStops.size(); i++) {
+            sb.append(routeStops.get(i).getStopId());
+            if (i >= routeStops.size() - 1) {
+                break;
+            }
+
+            sb.append(",");
+        }
+        sb.append(")");
+
+        //TODO: Get these back in order
+        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString(), null, null, null, null);
+
+        //TODO: Update cursor in StopsAdapter instead of creating new instance each time
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            StopsAdapter stopsAdapter = new StopsAdapter(this, cursor);
+            stopsSpinner.setAdapter(stopsAdapter);
+        }
+    }
+
     private void setRoutesSpinner() {
         cursor = MbtaBusTrackerApplication.getDbAdapter().db.query(Schema.RoutesTable.TABLE_NAME, Schema.RoutesTable.ALL_COLUMNS, null, null, null, null, null);
         if (cursor.getCount() > 0) {
             routesAdapter = new RoutesAdapter(this, cursor);
         }
 
+        //TODO: Update cursor in RoutesAdapter instead of creating new instance each time
         if (routesAdapter != null) {
             routesSpinner.setAdapter(routesAdapter);
         }
@@ -149,20 +169,6 @@ public class LandingActivity extends ActionBarActivity {
 
                 PersistStopsInDbTask persistStopsInDbTask = new PersistStopsInDbTask(routeId);
                 persistStopsInDbTask.execute(stops);
-
-                List<String> stopIds = new ArrayList<>();
-                StringBuilder sb = new StringBuilder();
-                for (Stop s : stops) {
-                    stopIds.add(s.getStopId());
-                    sb.append(s.getStopId());
-                    sb.append(" ");
-                }
-
-                String idsString = sb.toString().trim();
-
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(Schema.RoutesTable.STOP_IDS_LIST, idsString);
-                dbAdapter.db.update(Schema.RoutesTable.TABLE_NAME, contentValues, Schema.RoutesTable.ROUTE_ID + " = " + routeId, null);
             }
 
             @Override
@@ -247,14 +253,22 @@ public class LandingActivity extends ActionBarActivity {
     }
 
     @Subscribe
-    public void stopReturned(OttoBusEvent.StopsPersistCompletedEvent event) {
-        //TODO: Fix query
-        cursor = MbtaBusTrackerApplication.getDbAdapter().db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " = " + event.getRouteId(), null, null, null, null);
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            StopsAdapter stopsAdapter = new StopsAdapter(this, cursor);
-            stopsSpinner.setAdapter(stopsAdapter);
+    public void stopReturned(OttoBusEvent.StopsPersistedEvent event) {
+        List<RouteStop> routeStops = new ArrayList<>();
+
+        for (Stop s : event.getStops()) {
+            RouteStop rs = new RouteStop(event.getRouteId(), s.getStopId());
+            routeStops.add(rs);
         }
+
+        PersistRouteStopsInDbTask persistRouteStopsInDbTask = new PersistRouteStopsInDbTask(event.getRouteId());
+        persistRouteStopsInDbTask.execute(routeStops);
+    }
+
+    @Subscribe
+    public void routeStopReturned(OttoBusEvent.RouteStopsPersistedEvent event) {
+        List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, event.getRouteId());
+        getStopsFromForeignKey(routeStops);
     }
 
     @Override

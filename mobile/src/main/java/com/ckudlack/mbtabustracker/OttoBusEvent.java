@@ -1,6 +1,9 @@
 package com.ckudlack.mbtabustracker;
 
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
+import com.ckudlack.mbtabustracker.models.Stop;
+
+import java.util.List;
 
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -36,10 +39,28 @@ public class OttoBusEvent {
         }
     }
 
-    public static class StopsPersistCompletedEvent extends OttoBusEvent {
+    public static class StopsPersistedEvent extends OttoBusEvent {
+        private String routeId;
+        private List<Stop> stops;
+
+        public StopsPersistedEvent(String routeId, List<Stop> stops) {
+            this.routeId = routeId;
+            this.stops = stops;
+        }
+
+        public String getRouteId() {
+            return routeId;
+        }
+
+        public List<Stop> getStops() {
+            return stops;
+        }
+    }
+
+    public static class RouteStopsPersistedEvent extends OttoBusEvent {
         private String routeId;
 
-        public StopsPersistCompletedEvent(String routeId) {
+        public RouteStopsPersistedEvent(String routeId) {
             this.routeId = routeId;
         }
 

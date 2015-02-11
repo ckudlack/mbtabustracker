@@ -36,17 +36,15 @@ public class Schema {
         public static final String TABLE_NAME = "routes";
         public static final String ROUTE_ID = "route_id";
         public static final String ROUTE_NAME = "route_name";
-        public static final String STOP_IDS_LIST = "stop_ids_list";
 
         public static final String CREATE_TABLE_SQL =
                 buildCreateSQL(TABLE_NAME,
                         ROUTE_ID + " text not null, " +
-                                STOP_IDS_LIST + " text, " +
                                 ROUTE_NAME + " text not null"
                 );
 
         public static final String[] ALL_COLUMNS = new String[]{
-                ID_COL, ROUTE_ID, ROUTE_NAME, STOP_IDS_LIST
+                ID_COL, ROUTE_ID, ROUTE_NAME
         };
     }
 

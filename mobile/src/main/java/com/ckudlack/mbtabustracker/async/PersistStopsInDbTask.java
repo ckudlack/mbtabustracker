@@ -17,18 +17,22 @@ import java.util.Set;
 public class PersistStopsInDbTask extends AsyncTask<List<Stop>, Void, Void> {
 
     private String routeId;
+    private List<Stop> stops;
 
     public PersistStopsInDbTask(String routeId) {
         this.routeId = routeId;
     }
 
+    @SafeVarargs
     @Override
-    protected Void doInBackground(List<Stop>... params) {
+    protected final Void doInBackground(List<Stop>... params) {
         if (params[0] == null) {
             return null;
         }
 
-        List<DatabaseObject> updatedRoutes = new ArrayList<>();
+        stops = params[0];
+
+        List<DatabaseObject> updatedStops = new ArrayList<>();
 
         DBAdapter dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
 
@@ -42,17 +46,17 @@ public class PersistStopsInDbTask extends AsyncTask<List<Stop>, Void, Void> {
 
                 dbAdapter.db.update(Schema.StopsTable.TABLE_NAME, values, Schema.StopsTable.STOP_ID + " = " + s.getStopId(), null);
             } else {
-                updatedRoutes.add(s);
+                updatedStops.add(s);
             }
         }
 
-        dbAdapter.batchPersist(updatedRoutes, Schema.StopsTable.TABLE_NAME);
+        dbAdapter.batchPersist(updatedStops, Schema.StopsTable.TABLE_NAME);
         return null;
     }
 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.StopsPersistCompletedEvent(routeId));
+        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.StopsPersistedEvent(routeId, stops));
     }
 }

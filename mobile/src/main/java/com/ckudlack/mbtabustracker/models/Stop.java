@@ -143,7 +143,7 @@ public class Stop extends DatabaseObject {
 
     @Override
     protected String getTableName() {
-        return null;
+        return Schema.StopsTable.TABLE_NAME;
     }
 
     @Override

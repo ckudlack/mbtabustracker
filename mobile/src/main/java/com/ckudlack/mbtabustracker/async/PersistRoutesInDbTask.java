@@ -37,9 +37,6 @@ public class PersistRoutesInDbTask extends AsyncTask<List<Route>, Void, Void> {
 
                 dbAdapter.db.update(Schema.RoutesTable.TABLE_NAME, values,
                         Schema.RoutesTable.ROUTE_ID + " = " + r.getRouteId(), null);
-/*                dbAdapter.db.execSQL("UPDATE " + Schema.RoutesTable.TABLE_NAME + " SET "
-                        + Schema.UserTable.DB_CATEGORY + " = " + Schema.UserTable.DB_CATEGORY + " *" + dbCategory + " WHERE ("
-                        + Schema.UserTable.ACCOUNT_ID + ") = " + user.getId() + " AND (" + Schema.UserTable.DB_CATEGORY + " % " + dbCategory + " != 0)");*/
             } else {
                 updatedRoutes.add(r);
             }

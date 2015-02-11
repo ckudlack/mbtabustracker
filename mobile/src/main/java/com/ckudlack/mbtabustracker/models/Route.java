@@ -2,7 +2,6 @@ package com.ckudlack.mbtabustracker.models;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +21,9 @@ public class Route extends DatabaseObject {
     @Expose
     private String routeName;
     @Expose
-    private List<Direction> direction = new ArrayList<Direction>();
+    private List<Direction> direction = new ArrayList<>();
 
     List<Stop> stops = new ArrayList<>();
-
-    String[] stopIds;
 
     /**
      * @return The routeId
@@ -70,10 +67,6 @@ public class Route extends DatabaseObject {
         this.direction = direction;
     }
 
-    public String[] getStopIds() {
-        return stopIds;
-    }
-
     @Override
     protected String getTableName() {
         return Schema.RoutesTable.TABLE_NAME;
@@ -83,13 +76,6 @@ public class Route extends DatabaseObject {
     protected void buildSubclassFromCursor(Cursor cursor, DBAdapter dbAdapter) {
         setRouteId(cursor.getString(cursor.getColumnIndex(Schema.RoutesTable.ROUTE_ID)));
         setRouteName(cursor.getString(cursor.getColumnIndex(Schema.RoutesTable.ROUTE_NAME)));
-
-        String idsList = cursor.getString(cursor.getColumnIndex(Schema.RoutesTable.STOP_IDS_LIST));
-        if (!TextUtils.isEmpty(idsList)) {
-            String[] ids = idsList.split(" ");
-            stopIds = ids.clone();
-            stops = dbAdapter.getStopsForRoute(this);
-        }
     }
 
     @Override
@@ -101,5 +87,4 @@ public class Route extends DatabaseObject {
         values.put(Schema.RoutesTable.ROUTE_ID, routeId);
         values.put(Schema.RoutesTable.ROUTE_NAME, routeName);
     }
-
 }
