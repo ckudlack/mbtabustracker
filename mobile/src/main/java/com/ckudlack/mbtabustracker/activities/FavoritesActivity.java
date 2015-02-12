@@ -14,6 +14,7 @@ import android.view.View;
 import com.ckudlack.mbtabustracker.Constants;
 import com.ckudlack.mbtabustracker.OttoBusEvent;
 import com.ckudlack.mbtabustracker.R;
+import com.ckudlack.mbtabustracker.SpacesItemDecoration;
 import com.ckudlack.mbtabustracker.adapters.FavoritesAdapter;
 import com.ckudlack.mbtabustracker.application.MbtaBusTrackerApplication;
 import com.ckudlack.mbtabustracker.models.Direction;
@@ -71,6 +72,7 @@ public class FavoritesActivity extends ActionBarActivity {
         layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addItemDecoration(new SpacesItemDecoration(50));
 
         favoritesList = getFavoritesFromSharedPrefs();
 

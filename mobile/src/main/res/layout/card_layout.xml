@@ -5,16 +5,18 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:elevation="5dp">
 
         <TextView
             android:id="@+id/title"
             android:layout_width="match_parent"
-            android:layout_height="20dp"
+            android:layout_height="wrap_content"
             android:background="@android:color/darker_gray"
             android:gravity="center_vertical"
+            android:padding="7dp"
             android:textColor="@android:color/white"
-            android:textSize="14dp" />
+            android:textSize="22sp" />
 
         <TextView
             android:id="@+id/stop_name"
@@ -24,20 +26,19 @@
             android:layout_marginLeft="5dp"
             android:layout_marginTop="10dp"
             android:gravity="center_vertical"
-            android:text="Name"
-            android:textSize="10dp" />
+            android:text="Stop Name"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/prediction_times"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/stop_name"
-            android:layout_marginLeft="10dp"
+            android:layout_below="@+id/stop_name"
             android:layout_marginTop="10dp"
-            android:layout_toRightOf="@+id/stop_name"
             android:gravity="center_vertical"
-            android:text="Surname"
-            android:textSize="10dp" />
+            android:padding="5dp"
+            android:text="Predictions"
+            android:textSize="16sp" />
 
     </RelativeLayout>
 </android.support.v7.widget.CardView>
