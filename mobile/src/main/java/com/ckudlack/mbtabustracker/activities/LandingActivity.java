@@ -189,8 +189,8 @@ public class LandingActivity extends ActionBarActivity {
         }
         sb.append(")");
 
-        //TODO: Get these back in order
-        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString(), null, null, null, null);
+        //TODO: Make order depend on inbound / outbound
+        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString(), null, null, null, Schema.StopsTable.STOP_ORDER);
 
         //TODO: Update cursor in StopsAdapter instead of creating new instance each time
         if (cursor.getCount() > 0) {
@@ -367,6 +367,7 @@ public class LandingActivity extends ActionBarActivity {
                     sb.delete(sb.length() - 2, sb.length());
 
                     tripInfo.setText(sb.toString());
+                    break;
                 }
             }
         }

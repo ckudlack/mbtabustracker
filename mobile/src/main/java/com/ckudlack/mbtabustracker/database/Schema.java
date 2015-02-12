@@ -118,7 +118,7 @@ public class Schema {
                                 STOP_NAME + " text not null, " +
                                 STOP_PARENT_STATION + " text not null, " +
                                 STOP_PARENT_STATION_NAME + " text not null, " +
-                                STOP_ORDER + " text not null, " +
+                                STOP_ORDER + " integer not null, " +
                                 STOP_LAT + " double not null, " +
                                 STOP_LONG + " double not null"
                 );

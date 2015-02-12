@@ -154,7 +154,7 @@ public class Stop extends DatabaseObject {
         setStopLon(cursor.getString(cursor.getColumnIndex(Schema.StopsTable.STOP_LONG)));
         setParentStation(cursor.getString(cursor.getColumnIndex(Schema.StopsTable.STOP_PARENT_STATION)));
         setParentStationName(cursor.getString(cursor.getColumnIndex(Schema.StopsTable.STOP_PARENT_STATION_NAME)));
-        setStopOrder(cursor.getString(cursor.getColumnIndex(Schema.StopsTable.STOP_ORDER)));
+        setStopOrder(String.valueOf(cursor.getInt(cursor.getColumnIndex(Schema.StopsTable.STOP_ORDER))));
     }
 
     @Override
@@ -167,7 +167,7 @@ public class Stop extends DatabaseObject {
         values.put(Schema.StopsTable.STOP_LAT, stopLat);
         values.put(Schema.StopsTable.STOP_LONG, stopLon);
         values.put(Schema.StopsTable.STOP_NAME, stopName);
-        values.put(Schema.StopsTable.STOP_ORDER, stopOrder);
+        values.put(Schema.StopsTable.STOP_ORDER, Integer.parseInt(stopOrder));
         values.put(Schema.StopsTable.STOP_PARENT_STATION, parentStation);
         values.put(Schema.StopsTable.STOP_PARENT_STATION_NAME, parentStationName);
     }
