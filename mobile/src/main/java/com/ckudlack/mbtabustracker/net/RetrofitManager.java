@@ -72,6 +72,8 @@ public class RetrofitManager {
 
         @GET("/stopsbylocation")
         void getStopsByLocation(@Query("api_key") String apiKey, @Query("format") String format, @Query("lat") float latitude, @Query("lon") float longitude, Callback<StopsNearMeWrapper> callback);
+
+        //TODO: Add get schedule by route, get vehicles by route
     }
 
     public interface MbtaFeedService {

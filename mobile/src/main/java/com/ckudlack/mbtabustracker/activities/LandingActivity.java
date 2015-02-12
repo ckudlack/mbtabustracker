@@ -7,7 +7,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.TextView;
 
 import com.ckudlack.mbtabustracker.Constants;
 import com.ckudlack.mbtabustracker.OttoBusEvent;
@@ -21,13 +25,16 @@ import com.ckudlack.mbtabustracker.async.PersistStopsInDbTask;
 import com.ckudlack.mbtabustracker.database.DBAdapter;
 import com.ckudlack.mbtabustracker.database.Schema;
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
+import com.ckudlack.mbtabustracker.models.Direction;
 import com.ckudlack.mbtabustracker.models.Direction2;
 import com.ckudlack.mbtabustracker.models.FeedInfo;
 import com.ckudlack.mbtabustracker.models.Mode;
 import com.ckudlack.mbtabustracker.models.Route;
 import com.ckudlack.mbtabustracker.models.RouteStop;
 import com.ckudlack.mbtabustracker.models.Stop;
+import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
+import com.ckudlack.mbtabustracker.models.Trip;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.IoUtils;
 import com.squareup.otto.Subscribe;
@@ -46,10 +53,19 @@ import timber.log.Timber;
 public class LandingActivity extends ActionBarActivity {
 
     private RoutesAdapter routesAdapter;
+    private StopsAdapter stopsAdapter;
+
     private Cursor cursor;
+    private DBAdapter dbAdapter;
+
     private Spinner routesSpinner;
     private Spinner stopsSpinner;
-    private DBAdapter dbAdapter;
+    private Switch directionSwitch;
+    private Button goButton;
+    private TextView tripInfo;
+
+    private Route currentRoute;
+    private Stop currentStop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +87,8 @@ public class LandingActivity extends ActionBarActivity {
             }
         });
 
+        tripInfo = (TextView) findViewById(R.id.trip_info);
+
         routesSpinner = (Spinner) findViewById(R.id.routes_spinner);
         routesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -83,6 +101,8 @@ public class LandingActivity extends ActionBarActivity {
                 c.moveToPosition(position);
                 Route route = new Route();
                 route.buildFromCursor(c, dbAdapter);
+
+                currentRoute = route;
 
                 String routeId = route.getRouteId();
 
@@ -102,8 +122,58 @@ public class LandingActivity extends ActionBarActivity {
         });
 
         stopsSpinner = (Spinner) findViewById(R.id.stops_spinner);
+        stopsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    return;
+                }
+
+                Cursor c = stopsAdapter.getCursor();
+                c.moveToPosition(position);
+                Stop stop = new Stop();
+                stop.buildFromCursor(c, dbAdapter);
+
+                currentStop = stop;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         setRoutesSpinner();
+
+        directionSwitch = (Switch) findViewById(R.id.direction_switch);
+        directionSwitch.setEnabled(false);
+
+        directionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+            }
+        });
+
+
+        goButton = (Button) findViewById(R.id.go_button);
+        goButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RetrofitManager.getRealtimeService().getPredictionsByStop(RetrofitManager.API_KEY, RetrofitManager.FORMAT, currentStop.getStopId(), new Callback<StopPredictionWrapper>() {
+                    @Override
+                    public void success(StopPredictionWrapper stopPredictionWrapper, Response response) {
+                        Timber.d("Success");
+                        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.PredictionsByStopReturnEvent(stopPredictionWrapper));
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
+                    }
+                });
+            }
+        });
     }
 
     private void getStopsFromForeignKey(List<RouteStop> routeStops) {
@@ -125,7 +195,7 @@ public class LandingActivity extends ActionBarActivity {
         //TODO: Update cursor in StopsAdapter instead of creating new instance each time
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
-            StopsAdapter stopsAdapter = new StopsAdapter(this, cursor);
+            stopsAdapter = new StopsAdapter(this, cursor);
             stopsSpinner.setAdapter(stopsAdapter);
         }
     }
@@ -269,6 +339,37 @@ public class LandingActivity extends ActionBarActivity {
     public void routeStopReturned(OttoBusEvent.RouteStopsPersistedEvent event) {
         List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, event.getRouteId());
         getStopsFromForeignKey(routeStops);
+    }
+
+    @Subscribe
+    public void predictionsByStopReturned(OttoBusEvent.PredictionsByStopReturnEvent event) {
+        List<Mode> modes = event.getPredictionWrapper().getMode();
+        Mode busMode = null;
+        for (Mode m : modes) {
+            if (m.getRouteType().equals(Constants.ROUTE_TYPE_BUS)) {
+                busMode = m;
+                break;
+            }
+        }
+
+        if (busMode != null) {
+            List<Route> routes = busMode.getRoute();
+            for (Route r : routes) {
+                if (r.getRouteId().equals(currentRoute.getRouteId())) {
+                    Direction direction = r.getDirection().get(directionSwitch.isChecked() ? 1 : 0);
+                    List<Trip> trips = direction.getTrip();
+                    StringBuilder sb = new StringBuilder();
+                    for (Trip t : trips) {
+                        int timeRemaining = (int) (Integer.parseInt(t.getPreAway()) / 60f);
+                        sb.append(String.valueOf(timeRemaining));
+                        sb.append(" mins, ");
+                    }
+                    sb.delete(sb.length() - 2, sb.length());
+
+                    tripInfo.setText(sb.toString());
+                }
+            }
+        }
     }
 
     @Override

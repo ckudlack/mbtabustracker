@@ -276,7 +276,7 @@ public class DBAdapter {
     }
 
     public List<RouteStop> getRouteStops(String rowType, String id) {
-        Cursor cursor = db.query(Schema.RouteStopsTable.TABLE_NAME, Schema.RouteStopsTable.ALL_COLUMNS, rowType + " = " + id, null, null, null, null);
+        Cursor cursor = db.query(Schema.RouteStopsTable.TABLE_NAME, Schema.RouteStopsTable.ALL_COLUMNS, rowType + " = \'" + id + "\'", null, null, null, null);
 
         List<RouteStop> routeStops = new ArrayList<>();
 

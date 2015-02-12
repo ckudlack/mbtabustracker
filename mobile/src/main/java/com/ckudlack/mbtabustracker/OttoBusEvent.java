@@ -2,6 +2,7 @@ package com.ckudlack.mbtabustracker;
 
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
 import com.ckudlack.mbtabustracker.models.Stop;
+import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 
 import java.util.List;
 
@@ -78,6 +79,19 @@ public class OttoBusEvent {
 
         public RetrofitError getError() {
             return error;
+        }
+    }
+
+    public static class PredictionsByStopReturnEvent extends OttoBusEvent {
+        StopPredictionWrapper predictionWrapper;
+
+
+        public PredictionsByStopReturnEvent(StopPredictionWrapper predictionWrapper) {
+            this.predictionWrapper = predictionWrapper;
+        }
+
+        public StopPredictionWrapper getPredictionWrapper() {
+            return predictionWrapper;
         }
     }
 }
