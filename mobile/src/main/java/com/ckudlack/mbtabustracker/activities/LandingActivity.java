@@ -93,10 +93,6 @@ public class LandingActivity extends ActionBarActivity {
         routesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    return;
-                }
-
                 Cursor c = routesAdapter.getCursor();
                 c.moveToPosition(position);
                 Route route = new Route();
@@ -125,10 +121,6 @@ public class LandingActivity extends ActionBarActivity {
         stopsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    return;
-                }
-
                 Cursor c = stopsAdapter.getCursor();
                 c.moveToPosition(position);
                 Stop stop = new Stop();
@@ -146,15 +138,15 @@ public class LandingActivity extends ActionBarActivity {
         setRoutesSpinner();
 
         directionSwitch = (Switch) findViewById(R.id.direction_switch);
-        directionSwitch.setEnabled(false);
-
         directionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+                if (currentRoute != null) {
+                    List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, currentRoute.getRouteId());
+                    getStopsFromForeignKey(routeStops);
+                }
             }
         });
-
 
         goButton = (Button) findViewById(R.id.go_button);
         goButton.setOnClickListener(new View.OnClickListener() {
@@ -189,8 +181,8 @@ public class LandingActivity extends ActionBarActivity {
         }
         sb.append(")");
 
-        //TODO: Make order depend on inbound / outbound
-        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString(), null, null, null, Schema.StopsTable.STOP_ORDER);
+        String d = directionSwitch.isChecked() ? " DESC" : " ASC";
+        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString(), null, null, null, Schema.StopsTable.STOP_ORDER + d);
 
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
@@ -238,7 +230,7 @@ public class LandingActivity extends ActionBarActivity {
                 Timber.d("Success!");
 
                 List<Direction2> directions = stopsByRouteWrapper.getDirection();
-                List<Stop> stops = directions.get(0).getStop();
+                List<Stop> stops = directions.get(directionSwitch.isChecked() ? 1 : 0).getStop();
 
                 PersistStopsInDbTask persistStopsInDbTask = new PersistStopsInDbTask(routeId);
                 persistStopsInDbTask.execute(stops);
@@ -359,7 +351,13 @@ public class LandingActivity extends ActionBarActivity {
             List<Route> routes = busMode.getRoute();
             for (Route r : routes) {
                 if (r.getRouteId().equals(currentRoute.getRouteId())) {
-                    Direction direction = r.getDirection().get(directionSwitch.isChecked() ? 1 : 0);
+                    Direction direction;
+                    if (r.getDirection().size() > 1) {
+                        direction = r.getDirection().get(directionSwitch.isChecked() ? 1 : 0);
+                    } else {
+                        direction = r.getDirection().get(0);
+                    }
+
                     List<Trip> trips = direction.getTrip();
                     StringBuilder sb = new StringBuilder();
                     for (Trip t : trips) {
