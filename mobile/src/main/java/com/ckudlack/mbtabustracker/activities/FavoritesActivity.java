@@ -13,7 +13,14 @@ import android.view.View;
 
 import com.ckudlack.mbtabustracker.R;
 import com.ckudlack.mbtabustracker.adapters.FavoritesAdapter;
+import com.ckudlack.mbtabustracker.models.Favorite;
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class FavoritesActivity extends ActionBarActivity {
 
@@ -41,8 +48,21 @@ public class FavoritesActivity extends ActionBarActivity {
             }
         });
 
+        List<Favorite> favoritesList = new ArrayList<>();
+
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPrefs.getAll(); //Get all favorites
+        Set<String> favorites = sharedPrefs.getStringSet("", null);
+        if (favorites != null) {
+            Iterator<String> iterator = favorites.iterator();
+
+            while ((iterator.hasNext())) {
+                String fav = iterator.next();
+                Gson gson = new Gson();
+
+                Favorite favorite = gson.fromJson(fav, Favorite.class);
+                favoritesList.add(favorite);
+            }
+        }
 
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
@@ -50,7 +70,7 @@ public class FavoritesActivity extends ActionBarActivity {
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new FavoritesAdapter();
+        adapter = new FavoritesAdapter(favoritesList);
     }
 
     @Override
