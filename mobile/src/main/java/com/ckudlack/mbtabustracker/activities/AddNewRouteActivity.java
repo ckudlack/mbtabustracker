@@ -50,7 +50,7 @@ import retrofit.client.Response;
 import timber.log.Timber;
 
 
-public class LandingActivity extends ActionBarActivity {
+public class AddNewRouteActivity extends ActionBarActivity {
 
     private RoutesAdapter routesAdapter;
     private StopsAdapter stopsAdapter;

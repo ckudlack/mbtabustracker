@@ -5,14 +5,17 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".application.MbtaBusTrackerApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:name=".application.MbtaBusTrackerApplication">
+        android:theme="@style/AppTheme">
         <activity
-            android:name=".activities.LandingActivity"
-            android:label="@string/app_name">
+            android:name=".activities.AddNewRouteActivity"
+            android:label="@string/app_name" />
+        <activity
+            android:name=".activities.FavoritesActivity"
+            android:label="@string/title_activity_favorites">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
