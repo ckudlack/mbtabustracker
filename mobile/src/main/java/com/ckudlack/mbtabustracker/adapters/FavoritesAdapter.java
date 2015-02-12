@@ -30,9 +30,9 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             super(v);
 
             //TODO: More views
-            routeName = (TextView) v.findViewById(R.id.txtName);
-            predictionTimes = (TextView) v.findViewById(R.id.txtSurname);
-            stopName = (TextView) v.findViewById(R.id.txtEmail);
+            routeName = (TextView) v.findViewById(R.id.route_name);
+            predictionTimes = (TextView) v.findViewById(R.id.prediction_times);
+            stopName = (TextView) v.findViewById(R.id.stop_name);
         }
     }
 
@@ -55,5 +55,10 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
     @Override
     public int getItemCount() {
         return favorites.size();
+    }
+
+    public void updateList(List<Favorite> favorites) {
+        this.favorites = favorites;
+        notifyDataSetChanged();
     }
 }

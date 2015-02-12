@@ -13,12 +13,11 @@
             android:layout_height="20dp"
             android:background="@android:color/darker_gray"
             android:gravity="center_vertical"
-            android:text="contact det"
             android:textColor="@android:color/white"
             android:textSize="14dp" />
 
         <TextView
-            android:id="@+id/txtName"
+            android:id="@+id/route_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/title"
@@ -29,10 +28,10 @@
             android:textSize="10dp" />
 
         <TextView
-            android:id="@+id/txtSurname"
+            android:id="@+id/prediction_times"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/txtName"
+            android:layout_below="@id/route_name"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="10dp"
             android:gravity="center_vertical"
@@ -40,10 +39,10 @@
             android:textSize="10dp" />
 
         <TextView
-            android:id="@+id/txtEmail"
+            android:id="@+id/stop_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/txtName"
+            android:layout_alignBaseline="@id/route_name"
             android:layout_alignParentRight="true"
             android:layout_marginRight="150dp"
             android:layout_marginTop="10dp"
@@ -54,8 +53,8 @@
             android:id="@+id/txtAdd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/txtSurname"
-            android:layout_alignStart="@id/txtEmail"
+            android:layout_alignBaseline="@id/prediction_times"
+            android:layout_alignStart="@id/stop_name"
             android:text="Address"
             android:textSize="10dp" />
 

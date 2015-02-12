@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.ckudlack.mbtabustracker.Constants;
 import com.ckudlack.mbtabustracker.R;
 import com.ckudlack.mbtabustracker.adapters.FavoritesAdapter;
 import com.ckudlack.mbtabustracker.models.Favorite;
@@ -24,8 +25,10 @@ import java.util.Set;
 
 public class FavoritesActivity extends ActionBarActivity {
 
+    private static final int ADD_FAV_REQ_CODE = 324;
+
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter;
+    private FavoritesAdapter adapter;
     private LinearLayoutManager layoutManager;
 
     @Override
@@ -44,14 +47,27 @@ public class FavoritesActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(FavoritesActivity.this, AddNewRouteActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, ADD_FAV_REQ_CODE);
             }
         });
 
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(this);
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(layoutManager);
+
+        List<Favorite> favoritesList = getFavoritesFromSharedPrefs();
+
+        adapter = new FavoritesAdapter(favoritesList);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private List<Favorite> getFavoritesFromSharedPrefs() {
         List<Favorite> favoritesList = new ArrayList<>();
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Set<String> favorites = sharedPrefs.getStringSet("", null);
+        Set<String> favorites = sharedPrefs.getStringSet(Constants.FAVORITES_KEY, null);
         if (favorites != null) {
             Iterator<String> iterator = favorites.iterator();
 
@@ -63,14 +79,13 @@ public class FavoritesActivity extends ActionBarActivity {
                 favoritesList.add(favorite);
             }
         }
+        return favoritesList;
+    }
 
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        recyclerView.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(this);
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(layoutManager);
-
-        adapter = new FavoritesAdapter(favoritesList);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        List<Favorite> favorites = getFavoritesFromSharedPrefs();
+        adapter.updateList(favorites);
     }
 
     @Override

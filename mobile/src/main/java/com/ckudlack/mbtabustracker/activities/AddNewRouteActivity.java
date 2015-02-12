@@ -1,6 +1,8 @@
 package com.ckudlack.mbtabustracker.activities;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -27,6 +29,7 @@ import com.ckudlack.mbtabustracker.database.Schema;
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
 import com.ckudlack.mbtabustracker.models.Direction;
 import com.ckudlack.mbtabustracker.models.Direction2;
+import com.ckudlack.mbtabustracker.models.Favorite;
 import com.ckudlack.mbtabustracker.models.FeedInfo;
 import com.ckudlack.mbtabustracker.models.Mode;
 import com.ckudlack.mbtabustracker.models.Route;
@@ -37,12 +40,15 @@ import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
 import com.ckudlack.mbtabustracker.models.Trip;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.IoUtils;
+import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -61,7 +67,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
     private Spinner routesSpinner;
     private Spinner stopsSpinner;
     private Switch directionSwitch;
-    private Button goButton;
+    private Button addButton;
     private TextView tripInfo;
 
     private Route currentRoute;
@@ -148,15 +154,44 @@ public class AddNewRouteActivity extends ActionBarActivity {
             }
         });
 
-        goButton = (Button) findViewById(R.id.go_button);
-        goButton.setOnClickListener(new View.OnClickListener() {
+        addButton = (Button) findViewById(R.id.go_button);
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 RetrofitManager.getRealtimeService().getPredictionsByStop(RetrofitManager.API_KEY, RetrofitManager.FORMAT, currentStop.getStopId(), new Callback<StopPredictionWrapper>() {
                     @Override
                     public void success(StopPredictionWrapper stopPredictionWrapper, Response response) {
                         Timber.d("Success");
-                        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.PredictionsByStopReturnEvent(stopPredictionWrapper));
+
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(AddNewRouteActivity.this);
+                        Set<String> stringSet;
+                        stringSet = sharedPreferences.getStringSet(Constants.FAVORITES_KEY, null);
+
+                        Favorite favorite = new Favorite();
+                        favorite.setStopId(currentStop.getStopId());
+                        favorite.setStopName(currentStop.getStopName());
+                        favorite.setRouteId(currentRoute.getRouteId());
+                        favorite.setRouteName(currentRoute.getRouteName());
+                        favorite.setDirectionName(directionSwitch.isChecked() ? "Inbound" : "Outbound");
+                        favorite.setDirectionId(directionSwitch.isChecked() ? "1" : "0");
+
+                        Gson gson = new Gson();
+                        String fav = gson.toJson(favorite, Favorite.class);
+
+                        List<String> strings = new ArrayList<>();
+
+                        if (stringSet == null || stringSet.size() == 0) {
+                            strings.add(fav);
+                        } else {
+                            for (String aStringSet : stringSet) {
+                                strings.add(aStringSet);
+                            }
+                            strings.add(fav);
+                        }
+
+                        sharedPreferences.edit().putStringSet(Constants.FAVORITES_KEY, new HashSet<>(strings)).apply();
+
+//                        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.PredictionsByStopReturnEvent(stopPredictionWrapper));
                     }
 
                     @Override

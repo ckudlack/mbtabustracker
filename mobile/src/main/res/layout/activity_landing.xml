@@ -21,17 +21,32 @@
             android:layout_centerVertical="true"
             android:padding="10dp" />
 
+        <TextView
+            android:id="@+id/in_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:text="IN" />
+
         <Switch
             android:id="@+id/direction_switch"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:layout_alignParentRight="true"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:textOff="OUT"
-            android:textOn="IN" />
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_toLeftOf="@+id/in_tag" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/direction_switch"
+            android:text="OUT" />
+
+
     </RelativeLayout>
 
     <Spinner
@@ -43,14 +58,13 @@
 
     <Button
         android:id="@+id/go_button"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/stops_spinner"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
-        android:padding="10dp"
-        android:text="Go!" />
+        android:padding="20dp"
+        android:text="Add" />
 
     <TextView
         android:id="@+id/trip_info"
