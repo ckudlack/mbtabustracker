@@ -192,23 +192,26 @@ public class LandingActivity extends ActionBarActivity {
         //TODO: Make order depend on inbound / outbound
         cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString(), null, null, null, Schema.StopsTable.STOP_ORDER);
 
-        //TODO: Update cursor in StopsAdapter instead of creating new instance each time
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
-            stopsAdapter = new StopsAdapter(this, cursor);
-            stopsSpinner.setAdapter(stopsAdapter);
+            if (stopsAdapter == null) {
+                stopsAdapter = new StopsAdapter(this, cursor);
+                stopsSpinner.setAdapter(stopsAdapter);
+            } else {
+                stopsAdapter.loadNewCursor(cursor);
+            }
         }
     }
 
     private void setRoutesSpinner() {
         cursor = MbtaBusTrackerApplication.getDbAdapter().db.query(Schema.RoutesTable.TABLE_NAME, Schema.RoutesTable.ALL_COLUMNS, null, null, null, null, null);
         if (cursor.getCount() > 0) {
-            routesAdapter = new RoutesAdapter(this, cursor);
-        }
-
-        //TODO: Update cursor in RoutesAdapter instead of creating new instance each time
-        if (routesAdapter != null) {
-            routesSpinner.setAdapter(routesAdapter);
+            if (routesAdapter == null) {
+                routesAdapter = new RoutesAdapter(this, cursor);
+                routesSpinner.setAdapter(routesAdapter);
+            } else {
+                routesAdapter.loadNewCursor(cursor);
+            }
         }
     }
 

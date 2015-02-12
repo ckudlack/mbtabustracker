@@ -52,4 +52,9 @@ public class RoutesAdapter extends CursorAdapter {
 
         holder.routeName.setText(route.getRouteName());
     }
+
+    public void loadNewCursor(Cursor c) {
+        this.changeCursor(c);
+        this.notifyDataSetChanged();
+    }
 }

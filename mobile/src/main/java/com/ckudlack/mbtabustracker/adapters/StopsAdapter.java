@@ -51,4 +51,9 @@ public class StopsAdapter extends CursorAdapter {
 
         holder.stopName.setText(stop.getStopName());
     }
+
+    public void loadNewCursor(Cursor c) {
+        this.changeCursor(c);
+        this.notifyDataSetChanged();
+    }
 }
