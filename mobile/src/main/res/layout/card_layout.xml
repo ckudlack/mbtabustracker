@@ -17,7 +17,7 @@
             android:textSize="14dp" />
 
         <TextView
-            android:id="@+id/route_name"
+            android:id="@+id/stop_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/title"
@@ -31,31 +31,12 @@
             android:id="@+id/prediction_times"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/route_name"
+            android:layout_alignBaseline="@+id/stop_name"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="10dp"
+            android:layout_toRightOf="@+id/stop_name"
             android:gravity="center_vertical"
             android:text="Surname"
-            android:textSize="10dp" />
-
-        <TextView
-            android:id="@+id/stop_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/route_name"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="150dp"
-            android:layout_marginTop="10dp"
-            android:text="Email"
-            android:textSize="10dp" />
-
-        <TextView
-            android:id="@+id/txtAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/prediction_times"
-            android:layout_alignStart="@id/stop_name"
-            android:text="Address"
             android:textSize="10dp" />
 
     </RelativeLayout>

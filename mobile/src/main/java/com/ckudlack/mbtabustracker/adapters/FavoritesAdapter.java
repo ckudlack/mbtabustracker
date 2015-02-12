@@ -30,8 +30,8 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             super(v);
 
             //TODO: More views
-            routeName = (TextView) v.findViewById(R.id.route_name);
-            predictionTimes = (TextView) v.findViewById(R.id.prediction_times);
+            routeName = (TextView) v.findViewById(R.id.title);
+            predictionTimes = (TextView) v.findViewById(R.id.stop_name);
             stopName = (TextView) v.findViewById(R.id.stop_name);
         }
     }
@@ -48,7 +48,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         Favorite favorite = favorites.get(i);
-        viewHolder.routeName.setText(favorite.getRouteName());
+        viewHolder.routeName.setText("Route " + favorite.getRouteName());
         viewHolder.stopName.setText(favorite.getStopName());
     }
 
