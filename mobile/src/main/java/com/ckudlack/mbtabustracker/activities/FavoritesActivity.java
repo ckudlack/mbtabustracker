@@ -12,16 +12,30 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.ckudlack.mbtabustracker.Constants;
+import com.ckudlack.mbtabustracker.OttoBusEvent;
 import com.ckudlack.mbtabustracker.R;
 import com.ckudlack.mbtabustracker.adapters.FavoritesAdapter;
+import com.ckudlack.mbtabustracker.application.MbtaBusTrackerApplication;
+import com.ckudlack.mbtabustracker.models.Direction;
 import com.ckudlack.mbtabustracker.models.Favorite;
+import com.ckudlack.mbtabustracker.models.Mode;
+import com.ckudlack.mbtabustracker.models.Route;
+import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
+import com.ckudlack.mbtabustracker.models.Trip;
+import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
+import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import timber.log.Timber;
 
 public class FavoritesActivity extends ActionBarActivity {
 
@@ -30,6 +44,7 @@ public class FavoritesActivity extends ActionBarActivity {
     private RecyclerView recyclerView;
     private FavoritesAdapter adapter;
     private LinearLayoutManager layoutManager;
+    private List<Favorite> favoritesList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,10 +72,34 @@ public class FavoritesActivity extends ActionBarActivity {
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
-        List<Favorite> favoritesList = getFavoritesFromSharedPrefs();
+        favoritesList = getFavoritesFromSharedPrefs();
 
         adapter = new FavoritesAdapter(favoritesList);
         recyclerView.setAdapter(adapter);
+
+        getPredictionsForFavStop(favoritesList);
+    }
+
+    private void getPredictionsForFavStop(final List<Favorite> favoritesList) {
+        if (favoritesList.size() == 0) {
+            adapter.updateList(this.favoritesList);
+            return;
+        }
+
+        final Favorite favorite = favoritesList.get(0);
+        RetrofitManager.getRealtimeService().getPredictionsByStop(RetrofitManager.API_KEY, RetrofitManager.FORMAT, favorite.getStopId(), new Callback<StopPredictionWrapper>() {
+            @Override
+            public void success(StopPredictionWrapper stopPredictionWrapper, Response response) {
+                Timber.d("Success!");
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.PredictionsByStopReturnEvent(stopPredictionWrapper, favoritesList.get(0)));
+                getPredictionsForFavStop(favoritesList.subList(1, favoritesList.size()));
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
+            }
+        });
     }
 
     private List<Favorite> getFavoritesFromSharedPrefs() {
@@ -84,8 +123,20 @@ public class FavoritesActivity extends ActionBarActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        List<Favorite> favorites = getFavoritesFromSharedPrefs();
-        adapter.updateList(favorites);
+        favoritesList = getFavoritesFromSharedPrefs();
+        getPredictionsForFavStop(favoritesList);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MbtaBusTrackerApplication.bus.register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        MbtaBusTrackerApplication.bus.unregister(this);
+        super.onPause();
     }
 
     @Override
@@ -108,5 +159,45 @@ public class FavoritesActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Subscribe
+    public void predictionsByStopReturned(OttoBusEvent.PredictionsByStopReturnEvent event) {
+        List<Mode> modes = event.getPredictionWrapper().getMode();
+        Mode busMode = null;
+        for (Mode m : modes) {
+            if (m.getRouteType().equals(Constants.ROUTE_TYPE_BUS)) {
+                busMode = m;
+                break;
+            }
+        }
+
+        if (busMode != null) {
+            List<Route> routes = busMode.getRoute();
+            for (Route r : routes) {
+                if (r.getRouteId().equals(event.getFavorite().getRouteId())) {
+                    Direction direction;
+                    if (r.getDirection().size() > 1) {
+                        direction = r.getDirection().get(Integer.parseInt(event.getFavorite().getDirectionId()));
+                    } else {
+                        direction = r.getDirection().get(0);
+                    }
+
+                    List<Trip> trips = direction.getTrip();
+                    StringBuilder sb = new StringBuilder();
+                    for (Trip t : trips) {
+                        int timeRemaining = (int) (Integer.parseInt(t.getPreAway()) / 60f);
+                        sb.append(String.valueOf(timeRemaining));
+                        sb.append(" mins, ");
+                    }
+                    sb.delete(sb.length() - 2, sb.length());
+
+                    int index = favoritesList.indexOf(event.getFavorite());
+                    favoritesList.get(index).setPredictions(sb.toString());
+
+                    break;
+                }
+            }
+        }
     }
 }

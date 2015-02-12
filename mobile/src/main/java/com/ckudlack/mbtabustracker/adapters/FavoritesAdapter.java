@@ -31,7 +31,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
 
             //TODO: More views
             routeName = (TextView) v.findViewById(R.id.title);
-            predictionTimes = (TextView) v.findViewById(R.id.stop_name);
+            predictionTimes = (TextView) v.findViewById(R.id.prediction_times);
             stopName = (TextView) v.findViewById(R.id.stop_name);
         }
     }
@@ -50,6 +50,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
         Favorite favorite = favorites.get(i);
         viewHolder.routeName.setText("Route " + favorite.getRouteName());
         viewHolder.stopName.setText(favorite.getStopName());
+        viewHolder.predictionTimes.setText(favorite.getPredictions());
     }
 
     @Override

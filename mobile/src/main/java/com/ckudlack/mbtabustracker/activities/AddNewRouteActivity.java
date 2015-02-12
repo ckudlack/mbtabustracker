@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import com.ckudlack.mbtabustracker.Constants;
 import com.ckudlack.mbtabustracker.OttoBusEvent;
@@ -27,7 +26,6 @@ import com.ckudlack.mbtabustracker.async.PersistStopsInDbTask;
 import com.ckudlack.mbtabustracker.database.DBAdapter;
 import com.ckudlack.mbtabustracker.database.Schema;
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
-import com.ckudlack.mbtabustracker.models.Direction;
 import com.ckudlack.mbtabustracker.models.Direction2;
 import com.ckudlack.mbtabustracker.models.Favorite;
 import com.ckudlack.mbtabustracker.models.FeedInfo;
@@ -37,7 +35,6 @@ import com.ckudlack.mbtabustracker.models.RouteStop;
 import com.ckudlack.mbtabustracker.models.Stop;
 import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
-import com.ckudlack.mbtabustracker.models.Trip;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.IoUtils;
 import com.google.gson.Gson;
@@ -68,7 +65,6 @@ public class AddNewRouteActivity extends ActionBarActivity {
     private Spinner stopsSpinner;
     private Switch directionSwitch;
     private Button addButton;
-    private TextView tripInfo;
 
     private Route currentRoute;
     private Stop currentStop;
@@ -92,8 +88,6 @@ public class AddNewRouteActivity extends ActionBarActivity {
                 MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
             }
         });
-
-        tripInfo = (TextView) findViewById(R.id.trip_info);
 
         routesSpinner = (Spinner) findViewById(R.id.routes_spinner);
         routesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -190,8 +184,6 @@ public class AddNewRouteActivity extends ActionBarActivity {
                         }
 
                         sharedPreferences.edit().putStringSet(Constants.FAVORITES_KEY, new HashSet<>(strings)).apply();
-
-//                        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.PredictionsByStopReturnEvent(stopPredictionWrapper));
                     }
 
                     @Override
@@ -369,44 +361,6 @@ public class AddNewRouteActivity extends ActionBarActivity {
     public void routeStopReturned(OttoBusEvent.RouteStopsPersistedEvent event) {
         List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, event.getRouteId());
         getStopsFromForeignKey(routeStops);
-    }
-
-    @Subscribe
-    public void predictionsByStopReturned(OttoBusEvent.PredictionsByStopReturnEvent event) {
-        List<Mode> modes = event.getPredictionWrapper().getMode();
-        Mode busMode = null;
-        for (Mode m : modes) {
-            if (m.getRouteType().equals(Constants.ROUTE_TYPE_BUS)) {
-                busMode = m;
-                break;
-            }
-        }
-
-        if (busMode != null) {
-            List<Route> routes = busMode.getRoute();
-            for (Route r : routes) {
-                if (r.getRouteId().equals(currentRoute.getRouteId())) {
-                    Direction direction;
-                    if (r.getDirection().size() > 1) {
-                        direction = r.getDirection().get(directionSwitch.isChecked() ? 1 : 0);
-                    } else {
-                        direction = r.getDirection().get(0);
-                    }
-
-                    List<Trip> trips = direction.getTrip();
-                    StringBuilder sb = new StringBuilder();
-                    for (Trip t : trips) {
-                        int timeRemaining = (int) (Integer.parseInt(t.getPreAway()) / 60f);
-                        sb.append(String.valueOf(timeRemaining));
-                        sb.append(" mins, ");
-                    }
-                    sb.delete(sb.length() - 2, sb.length());
-
-                    tripInfo.setText(sb.toString());
-                    break;
-                }
-            }
-        }
     }
 
     @Override

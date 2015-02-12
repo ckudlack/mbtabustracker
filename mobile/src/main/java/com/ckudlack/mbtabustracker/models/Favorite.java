@@ -8,6 +8,7 @@ public class Favorite {
     String directionName;
     String routeName;
     String stopName;
+    String predictions;
 
     public Favorite() {
     }
@@ -59,5 +60,13 @@ public class Favorite {
 
     public void setStopName(String stopName) {
         this.stopName = stopName;
+    }
+
+    public String getPredictions() {
+        return predictions;
+    }
+
+    public void setPredictions(String predictions) {
+        this.predictions = predictions;
     }
 }

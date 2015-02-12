@@ -1,6 +1,7 @@
 package com.ckudlack.mbtabustracker;
 
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
+import com.ckudlack.mbtabustracker.models.Favorite;
 import com.ckudlack.mbtabustracker.models.Stop;
 import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 
@@ -83,15 +84,20 @@ public class OttoBusEvent {
     }
 
     public static class PredictionsByStopReturnEvent extends OttoBusEvent {
-        StopPredictionWrapper predictionWrapper;
+        private StopPredictionWrapper predictionWrapper;
+        private Favorite favorite;
 
-
-        public PredictionsByStopReturnEvent(StopPredictionWrapper predictionWrapper) {
+        public PredictionsByStopReturnEvent(StopPredictionWrapper predictionWrapper, Favorite favorite) {
             this.predictionWrapper = predictionWrapper;
+            this.favorite = favorite;
         }
 
         public StopPredictionWrapper getPredictionWrapper() {
             return predictionWrapper;
+        }
+
+        public Favorite getFavorite() {
+            return favorite;
         }
     }
 }

@@ -15,7 +15,7 @@
 
         <Spinner
             android:id="@+id/routes_spinner"
-            android:layout_width="200dp"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
@@ -65,13 +65,5 @@
         android:layout_marginTop="10dp"
         android:padding="20dp"
         android:text="Add" />
-
-    <TextView
-        android:id="@+id/trip_info"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_below="@+id/go_button"
-        android:padding="20dp"
-        android:textSize="24sp" />
 
 </RelativeLayout>
