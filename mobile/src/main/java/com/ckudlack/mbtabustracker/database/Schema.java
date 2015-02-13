@@ -52,15 +52,17 @@ public class Schema {
         public static final String TABLE_NAME = "route_stops";
         public static final String ROUTE_ID = "route_id";
         public static final String STOP_ID = "stop_id";
+        public static final String DIRECTION = "direction";
 
         public static final String CREATE_TABLE_SQL =
                 buildCreateSQL(TABLE_NAME,
                         ROUTE_ID + " text not null, " +
-                                STOP_ID + " text not null"
+                                STOP_ID + " text not null, " +
+                                DIRECTION + " text not null"
                 );
 
         public static final String[] ALL_COLUMNS = new String[]{
-                ID_COL, ROUTE_ID, STOP_ID
+                ID_COL, ROUTE_ID, STOP_ID, DIRECTION
         };
     }
 
@@ -111,6 +113,7 @@ public class Schema {
         public static final String STOP_ORDER = "stop_order";
         public static final String STOP_PARENT_STATION = "stop_parent_station";
         public static final String STOP_PARENT_STATION_NAME = "stop_parent_station_name";
+        public static final String STOP_DIRECTION = "stop_direction";
 
         public static final String CREATE_TABLE_SQL =
                 buildCreateSQL(TABLE_NAME,
@@ -118,13 +121,14 @@ public class Schema {
                                 STOP_NAME + " text not null, " +
                                 STOP_PARENT_STATION + " text not null, " +
                                 STOP_PARENT_STATION_NAME + " text not null, " +
+                                STOP_DIRECTION + " text not null, " +
                                 STOP_ORDER + " integer not null, " +
                                 STOP_LAT + " double not null, " +
                                 STOP_LONG + " double not null"
                 );
 
         public static final String[] ALL_COLUMNS = new String[]{
-                ID_COL, STOP_ID, STOP_NAME, STOP_LAT, STOP_LONG, STOP_ORDER, STOP_PARENT_STATION, STOP_PARENT_STATION_NAME
+                ID_COL, STOP_ID, STOP_NAME, STOP_LAT, STOP_LONG, STOP_ORDER, STOP_PARENT_STATION, STOP_PARENT_STATION_NAME, STOP_DIRECTION
         };
     }
 

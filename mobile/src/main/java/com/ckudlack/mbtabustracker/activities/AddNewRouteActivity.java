@@ -33,7 +33,6 @@ import com.ckudlack.mbtabustracker.models.Mode;
 import com.ckudlack.mbtabustracker.models.Route;
 import com.ckudlack.mbtabustracker.models.RouteStop;
 import com.ckudlack.mbtabustracker.models.Stop;
-import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.IoUtils;
@@ -152,47 +151,43 @@ public class AddNewRouteActivity extends ActionBarActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RetrofitManager.getRealtimeService().getPredictionsByStop(RetrofitManager.API_KEY, RetrofitManager.FORMAT, currentStop.getStopId(), new Callback<StopPredictionWrapper>() {
-                    @Override
-                    public void success(StopPredictionWrapper stopPredictionWrapper, Response response) {
-                        Timber.d("Success");
-
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(AddNewRouteActivity.this);
-                        Set<String> stringSet;
-                        stringSet = sharedPreferences.getStringSet(Constants.FAVORITES_KEY, null);
-
-                        Favorite favorite = new Favorite();
-                        favorite.setStopId(currentStop.getStopId());
-                        favorite.setStopName(currentStop.getStopName());
-                        favorite.setRouteId(currentRoute.getRouteId());
-                        favorite.setRouteName(currentRoute.getRouteName());
-                        favorite.setDirectionName(directionSwitch.isChecked() ? "Inbound" : "Outbound");
-                        favorite.setDirectionId(directionSwitch.isChecked() ? "1" : "0");
-
-                        Gson gson = new Gson();
-                        String fav = gson.toJson(favorite, Favorite.class);
-
-                        List<String> strings = new ArrayList<>();
-
-                        if (stringSet == null || stringSet.size() == 0) {
-                            strings.add(fav);
-                        } else {
-                            for (String aStringSet : stringSet) {
-                                strings.add(aStringSet);
-                            }
-                            strings.add(fav);
-                        }
-
-                        sharedPreferences.edit().putStringSet(Constants.FAVORITES_KEY, new HashSet<>(strings)).apply();
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-                        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
-                    }
-                });
+                addStopToFavorites();
             }
         });
+    }
+
+    private void addStopToFavorites() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Set<String> stringSet;
+        stringSet = sharedPreferences.getStringSet(Constants.FAVORITES_KEY, null);
+
+        Favorite favorite = new Favorite();
+        favorite.setStopId(currentStop.getStopId());
+        favorite.setStopName(currentStop.getStopName());
+        favorite.setRouteId(currentRoute.getRouteId());
+        favorite.setRouteName(currentRoute.getRouteName());
+        favorite.setDirectionName(directionSwitch.isChecked() ? "Inbound" : "Outbound");
+        favorite.setDirectionId(getDirectionString());
+
+        Gson gson = new Gson();
+        String fav = gson.toJson(favorite, Favorite.class);
+
+        List<String> strings = new ArrayList<>();
+
+        if (stringSet == null || stringSet.size() == 0) {
+            strings.add(fav);
+        } else {
+            for (String aStringSet : stringSet) {
+                strings.add(aStringSet);
+            }
+            strings.add(fav);
+        }
+
+        sharedPreferences.edit().putStringSet(Constants.FAVORITES_KEY, new HashSet<>(strings)).apply();
+    }
+
+    private String getDirectionString() {
+        return directionSwitch.isChecked() ? "1" : "0";
     }
 
     private void getStopsFromForeignKey(List<RouteStop> routeStops) {
@@ -208,8 +203,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
         }
         sb.append(")");
 
-        String d = directionSwitch.isChecked() ? " DESC" : " ASC";
-        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString(), null, null, null, Schema.StopsTable.STOP_ORDER + d);
+        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString() + " AND " + Schema.StopsTable.STOP_DIRECTION + " = " + (directionSwitch.isChecked() ? "\'1\'" : "\'0\'"), null, null, null, Schema.StopsTable.STOP_ORDER);
 
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
@@ -219,6 +213,8 @@ public class AddNewRouteActivity extends ActionBarActivity {
             } else {
                 stopsAdapter.loadNewCursor(cursor);
             }
+        } else {
+            getStopsForRoute(currentRoute.getRouteId());
         }
     }
 
@@ -259,7 +255,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
                 List<Direction2> directions = stopsByRouteWrapper.getDirection();
                 List<Stop> stops = directions.get(directionSwitch.isChecked() ? 1 : 0).getStop();
 
-                PersistStopsInDbTask persistStopsInDbTask = new PersistStopsInDbTask(routeId);
+                PersistStopsInDbTask persistStopsInDbTask = new PersistStopsInDbTask(routeId, getDirectionString());
                 persistStopsInDbTask.execute(stops);
             }
 
@@ -349,11 +345,11 @@ public class AddNewRouteActivity extends ActionBarActivity {
         List<RouteStop> routeStops = new ArrayList<>();
 
         for (Stop s : event.getStops()) {
-            RouteStop rs = new RouteStop(event.getRouteId(), s.getStopId());
+            RouteStop rs = new RouteStop(event.getRouteId(), s.getStopId(), getDirectionString());
             routeStops.add(rs);
         }
 
-        PersistRouteStopsInDbTask persistRouteStopsInDbTask = new PersistRouteStopsInDbTask(event.getRouteId());
+        PersistRouteStopsInDbTask persistRouteStopsInDbTask = new PersistRouteStopsInDbTask(event.getRouteId(), getDirectionString());
         persistRouteStopsInDbTask.execute(routeStops);
     }
 

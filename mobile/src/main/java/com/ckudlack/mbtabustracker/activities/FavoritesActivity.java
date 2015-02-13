@@ -100,6 +100,7 @@ public class FavoritesActivity extends ActionBarActivity {
             @Override
             public void failure(RetrofitError error) {
                 MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
+                getPredictionsForFavStop(favoritesList.subList(1, favoritesList.size()));
             }
         });
     }

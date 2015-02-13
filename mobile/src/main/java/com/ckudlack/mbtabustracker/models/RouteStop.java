@@ -8,19 +8,22 @@ import com.ckudlack.mbtabustracker.database.DatabaseObject;
 import com.ckudlack.mbtabustracker.database.Schema;
 
 /**
-    Foreign Key Mapper
-*/
+ * Foreign Key Mapper
+ */
 
 public class RouteStop extends DatabaseObject {
+
     private String routeId;
     private String stopId;
+    private String direction;
 
     public RouteStop() {
     }
 
-    public RouteStop(String routeId, String stopId) {
+    public RouteStop(String routeId, String stopId, String direction) {
         this.routeId = routeId;
         this.stopId = stopId;
+        this.direction = direction;
     }
 
     public String getRouteId() {
@@ -39,6 +42,14 @@ public class RouteStop extends DatabaseObject {
         this.stopId = stopId;
     }
 
+    public String getDirection() {
+        return direction;
+    }
+
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
+
     @Override
     protected String getTableName() {
         return Schema.RouteStopsTable.TABLE_NAME;
@@ -48,12 +59,13 @@ public class RouteStop extends DatabaseObject {
     protected void buildSubclassFromCursor(Cursor cursor, DBAdapter dbAdapter) {
         setRouteId(cursor.getString(cursor.getColumnIndex(Schema.RouteStopsTable.ROUTE_ID)));
         setStopId(cursor.getString(cursor.getColumnIndex(Schema.RouteStopsTable.STOP_ID)));
+        setDirection(cursor.getString(cursor.getColumnIndex(Schema.RouteStopsTable.DIRECTION)));
     }
 
     @Override
     public void fillInContentValues(ContentValues values, DBAdapter dbAdapter) {
         values.put(Schema.RouteStopsTable.ROUTE_ID, routeId);
         values.put(Schema.RouteStopsTable.STOP_ID, stopId);
+        values.put(Schema.RouteStopsTable.DIRECTION, direction);
     }
-
 }

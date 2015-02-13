@@ -34,6 +34,7 @@ public class Stop extends DatabaseObject {
     private String stopLon;
     @Expose
     private String distance;
+    private String direction;
 
     /**
      * @return The stopOrder
@@ -141,6 +142,14 @@ public class Stop extends DatabaseObject {
         this.distance = distance;
     }
 
+    public String getDirection() {
+        return direction;
+    }
+
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
+
     @Override
     protected String getTableName() {
         return Schema.StopsTable.TABLE_NAME;
@@ -155,6 +164,7 @@ public class Stop extends DatabaseObject {
         setParentStation(cursor.getString(cursor.getColumnIndex(Schema.StopsTable.STOP_PARENT_STATION)));
         setParentStationName(cursor.getString(cursor.getColumnIndex(Schema.StopsTable.STOP_PARENT_STATION_NAME)));
         setStopOrder(String.valueOf(cursor.getInt(cursor.getColumnIndex(Schema.StopsTable.STOP_ORDER))));
+        setDirection(cursor.getString(cursor.getColumnIndex(Schema.StopsTable.STOP_DIRECTION)));
     }
 
     @Override
@@ -170,5 +180,6 @@ public class Stop extends DatabaseObject {
         values.put(Schema.StopsTable.STOP_ORDER, Integer.parseInt(stopOrder));
         values.put(Schema.StopsTable.STOP_PARENT_STATION, parentStation);
         values.put(Schema.StopsTable.STOP_PARENT_STATION_NAME, parentStationName);
+        values.put(Schema.StopsTable.STOP_DIRECTION, direction);
     }
 }

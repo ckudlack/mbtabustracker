@@ -11,15 +11,17 @@ import com.ckudlack.mbtabustracker.database.Schema;
 import com.ckudlack.mbtabustracker.models.RouteStop;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class PersistRouteStopsInDbTask extends AsyncTask<List<RouteStop>, Void, Void> {
 
     private String routeId;
+    private String direction;
 
-    public PersistRouteStopsInDbTask(String routeId) {
+    public PersistRouteStopsInDbTask(String routeId, String direction) {
         this.routeId = routeId;
+        this.direction = direction;
     }
 
     @SafeVarargs
@@ -33,11 +35,10 @@ public class PersistRouteStopsInDbTask extends AsyncTask<List<RouteStop>, Void, 
 
         DBAdapter dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
 
-        // Get previous IDs
-        Set<String> ids = dbAdapter.getAllIds(Schema.RouteStopsTable.TABLE_NAME, Schema.RouteStopsTable.ALL_COLUMNS, Schema.RouteStopsTable.ROUTE_ID);
+        HashMap<String, String> idToDirectionMap = dbAdapter.getIdToDirectionMap(Schema.RouteStopsTable.TABLE_NAME, Schema.RouteStopsTable.ALL_COLUMNS, Schema.RouteStopsTable.ROUTE_ID, Schema.RouteStopsTable.DIRECTION);
 
         for (RouteStop rs : params[0]) {
-            if (ids.contains(rs.getRouteId())) {
+            if (idToDirectionMap.containsKey(routeId) && idToDirectionMap.get(routeId).equals(direction)) {
                 ContentValues values = new ContentValues();
                 rs.fillInContentValues(values, dbAdapter);
 

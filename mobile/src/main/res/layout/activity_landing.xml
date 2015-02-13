@@ -37,7 +37,9 @@
             android:layout_centerVertical="true"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:layout_toLeftOf="@+id/in_tag" />
+            android:layout_toLeftOf="@+id/in_tag"
+            android:textOff=""
+            android:textOn="" />
 
         <TextView
             android:layout_width="wrap_content"

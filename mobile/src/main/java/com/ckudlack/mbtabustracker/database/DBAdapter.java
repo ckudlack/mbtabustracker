@@ -14,6 +14,7 @@ import com.ckudlack.mbtabustracker.models.RouteStop;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -243,6 +244,23 @@ public class DBAdapter {
             cursor.close();
         }
         return set;
+    }
+
+    public HashMap<String, String> getIdToDirectionMap(String tableName, String[] columns, String firstColumn, String secondColumn) {
+        HashMap<String, String> map = new HashMap<>();
+        Cursor cursor = db.query(tableName, columns,
+                null, null, null, null, null);
+
+        try {
+            while (cursor.moveToNext()) {
+                String stopId = cursor.getString(cursor.getColumnIndex(firstColumn));
+                String direction = cursor.getString(cursor.getColumnIndex(secondColumn));
+                map.put(stopId, direction);
+            }
+        } finally {
+            cursor.close();
+        }
+        return map;
     }
 
     public void batchPersist(List<DatabaseObject> dbObjects, String tableName) {

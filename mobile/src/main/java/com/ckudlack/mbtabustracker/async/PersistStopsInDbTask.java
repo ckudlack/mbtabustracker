@@ -11,16 +11,18 @@ import com.ckudlack.mbtabustracker.database.Schema;
 import com.ckudlack.mbtabustracker.models.Stop;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class PersistStopsInDbTask extends AsyncTask<List<Stop>, Void, Void> {
 
     private String routeId;
+    private String direction;
     private List<Stop> stops;
 
-    public PersistStopsInDbTask(String routeId) {
+    public PersistStopsInDbTask(String routeId, String direction) {
         this.routeId = routeId;
+        this.direction = direction;
     }
 
     @SafeVarargs
@@ -36,11 +38,11 @@ public class PersistStopsInDbTask extends AsyncTask<List<Stop>, Void, Void> {
 
         DBAdapter dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
 
-        // Get previous IDs
-        Set<String> ids = dbAdapter.getAllIds(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID);
+        HashMap<String, String> stopsWithDirection = dbAdapter.getIdToDirectionMap(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID, Schema.StopsTable.STOP_DIRECTION);
 
         for (Stop s : params[0]) {
-            if (ids.contains(s.getStopId())) {
+            s.setDirection(direction);
+            if (stopsWithDirection.containsKey(s.getStopId()) && stopsWithDirection.get(s.getStopId()).equals(s.getDirection())) {
                 ContentValues values = new ContentValues();
                 s.contentValuesHelper(values);
 
