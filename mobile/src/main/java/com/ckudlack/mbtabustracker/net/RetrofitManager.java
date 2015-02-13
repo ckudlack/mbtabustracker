@@ -2,6 +2,7 @@ package com.ckudlack.mbtabustracker.net;
 
 import com.ckudlack.mbtabustracker.Constants;
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
+import com.ckudlack.mbtabustracker.models.RouteScheduleWrapper;
 import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
 import com.ckudlack.mbtabustracker.models.StopsNearMeWrapper;
@@ -73,7 +74,11 @@ public class RetrofitManager {
         @GET("/stopsbylocation")
         void getStopsByLocation(@Query("api_key") String apiKey, @Query("format") String format, @Query("lat") float latitude, @Query("lon") float longitude, Callback<StopsNearMeWrapper> callback);
 
-        //TODO: Add get schedule by route, get vehicles by route
+        @GET("/scheduleByRoute")
+        void getScheduleByRoute(@Query("api_key") String apiKey, @Query("format") String format, @Query("route") String routeId, Callback<RouteScheduleWrapper> callback);
+
+        //TODO: Add get vehicles by route
+
     }
 
     public interface MbtaFeedService {

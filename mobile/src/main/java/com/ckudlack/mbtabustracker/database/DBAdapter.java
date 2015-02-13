@@ -171,6 +171,7 @@ public class DBAdapter {
             db.execSQL(Schema.RoutesTable.CREATE_TABLE_SQL);
             db.execSQL(Schema.StopsTable.CREATE_TABLE_SQL);
             db.execSQL(Schema.RouteStopsTable.CREATE_TABLE_SQL);
+            db.execSQL(Schema.StopTimesTable.CREATE_TABLE_SQL);
             Timber.d("Tables created!");
         }
 
@@ -180,6 +181,7 @@ public class DBAdapter {
             db.execSQL("DROP TABLE IF EXISTS " + Schema.RoutesTable.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + Schema.StopsTable.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + Schema.RouteStopsTable.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + Schema.StopTimesTable.TABLE_NAME);
         }
 
         private static void runMigrations(SQLiteDatabase db, int oldVersion, int newVersion) {

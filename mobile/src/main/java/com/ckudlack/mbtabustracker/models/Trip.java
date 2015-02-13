@@ -3,6 +3,9 @@ package com.ckudlack.mbtabustracker.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Trip {
 
     @SerializedName("trip_id")
@@ -26,6 +29,9 @@ public class Trip {
     @SerializedName("pre_away")
     @Expose
     private String preAway;
+
+    @Expose
+    List<StopTime> stopTimeList = new ArrayList<>();
 
     /**
      * @return The tripId
@@ -125,4 +131,11 @@ public class Trip {
         this.preAway = preAway;
     }
 
+    public List<StopTime> getStopTimeList() {
+        return stopTimeList;
+    }
+
+    public void setStopTimeList(List<StopTime> stopTimeList) {
+        this.stopTimeList = stopTimeList;
+    }
 }
