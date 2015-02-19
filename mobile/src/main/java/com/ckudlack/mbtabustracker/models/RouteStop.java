@@ -14,15 +14,15 @@ import com.ckudlack.mbtabustracker.database.Schema;
 public class RouteStop extends DatabaseObject {
 
     private String routeId;
-    private String stopId;
+    private long stopDbId;
     private String direction;
 
     public RouteStop() {
     }
 
-    public RouteStop(String routeId, String stopId, String direction) {
+    public RouteStop(String routeId, long stopDbId, String direction) {
         this.routeId = routeId;
-        this.stopId = stopId;
+        this.stopDbId = stopDbId;
         this.direction = direction;
     }
 
@@ -34,12 +34,12 @@ public class RouteStop extends DatabaseObject {
         this.routeId = routeId;
     }
 
-    public String getStopId() {
-        return stopId;
+    public long getStopDbId() {
+        return stopDbId;
     }
 
-    public void setStopId(String stopId) {
-        this.stopId = stopId;
+    public void setStopDbId(long stopDbId) {
+        this.stopDbId = stopDbId;
     }
 
     public String getDirection() {
@@ -58,14 +58,14 @@ public class RouteStop extends DatabaseObject {
     @Override
     protected void buildSubclassFromCursor(Cursor cursor, DBAdapter dbAdapter) {
         setRouteId(cursor.getString(cursor.getColumnIndex(Schema.RouteStopsTable.ROUTE_ID)));
-        setStopId(cursor.getString(cursor.getColumnIndex(Schema.RouteStopsTable.STOP_ID)));
+        setStopDbId(cursor.getLong(cursor.getColumnIndex(Schema.RouteStopsTable.STOP_ID)));
         setDirection(cursor.getString(cursor.getColumnIndex(Schema.RouteStopsTable.DIRECTION)));
     }
 
     @Override
     public void fillInContentValues(ContentValues values, DBAdapter dbAdapter) {
         values.put(Schema.RouteStopsTable.ROUTE_ID, routeId);
-        values.put(Schema.RouteStopsTable.STOP_ID, stopId);
+        values.put(Schema.RouteStopsTable.STOP_ID, stopDbId);
         values.put(Schema.RouteStopsTable.DIRECTION, direction);
     }
 }

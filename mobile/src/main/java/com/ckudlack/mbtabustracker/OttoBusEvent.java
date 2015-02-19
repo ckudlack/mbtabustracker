@@ -2,7 +2,6 @@ package com.ckudlack.mbtabustracker;
 
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
 import com.ckudlack.mbtabustracker.models.Favorite;
-import com.ckudlack.mbtabustracker.models.Stop;
 import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 
 import java.util.List;
@@ -43,19 +42,19 @@ public class OttoBusEvent {
 
     public static class StopsPersistedEvent extends OttoBusEvent {
         private String routeId;
-        private List<Stop> stops;
+        private List<Long> ids;
 
-        public StopsPersistedEvent(String routeId, List<Stop> stops) {
+        public StopsPersistedEvent(String routeId, List<Long> ids) {
             this.routeId = routeId;
-            this.stops = stops;
+            this.ids = ids;
         }
 
         public String getRouteId() {
             return routeId;
         }
 
-        public List<Stop> getStops() {
-            return stops;
+        public List<Long> getIds() {
+            return ids;
         }
     }
 

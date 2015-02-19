@@ -6,4 +6,5 @@
     <string name="title_activity_favorites">FavoritesActivity</string>
     <string name="title_activity_add_new_route">AddNewRouteActivity</string>
     <string name="maps_api">AIzaSyDLAyaTUNbZkBiDFDhJbrXTMAO7tO76XV4</string>
+    <string name="route_added">Stop Successfully Added!</string>
 </resources>

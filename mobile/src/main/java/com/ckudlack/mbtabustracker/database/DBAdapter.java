@@ -283,6 +283,27 @@ public class DBAdapter {
 
     }
 
+    public List<Long> batchPersistAndReturnIds(List<DatabaseObject> dbObjects, String tableName) {
+        List<Long> ids = new ArrayList<>();
+
+        db.beginTransaction();
+        try {
+            for (DatabaseObject obj : dbObjects) {
+                ContentValues cv = new ContentValues();
+                obj.fillInContentValues(cv, this);
+                long newID = db.insertWithOnConflict(tableName, null, cv, SQLiteDatabase.CONFLICT_FAIL);
+                if (newID <= 0) {
+                    throw new SQLException("Error");
+                }
+                ids.add(newID);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        return ids;
+    }
+
     public FeedInfo getFeedInfo() {
         FeedInfo feedInfo = new FeedInfo();
 

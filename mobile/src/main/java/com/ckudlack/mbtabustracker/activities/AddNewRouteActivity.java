@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.ckudlack.mbtabustracker.Constants;
 import com.ckudlack.mbtabustracker.OttoBusEvent;
@@ -178,7 +179,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
         map = ((MapFragment) mapFragment).getMap();
         map.getUiSettings().setMyLocationButtonEnabled(false);
         UiSettings uiSettings = map.getUiSettings();
-        uiSettings.setZoomControlsEnabled(false);
+        uiSettings.setZoomControlsEnabled(true);
         uiSettings.setCompassEnabled(false);
         uiSettings.setRotateGesturesEnabled(false);
 
@@ -227,6 +228,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
         }
 
         sharedPreferences.edit().putStringSet(Constants.FAVORITES_KEY, new HashSet<>(strings)).apply();
+        Toast.makeText(this, getString(R.string.route_added), Toast.LENGTH_LONG).show();
     }
 
     private String getDirectionString() {
@@ -237,7 +239,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
         StringBuilder sb = new StringBuilder();
         sb.append("(");
         for (int i = 0; i < routeStops.size(); i++) {
-            sb.append(routeStops.get(i).getStopId());
+            sb.append(routeStops.get(i).getStopDbId());
             if (i >= routeStops.size() - 1) {
                 break;
             }
@@ -246,7 +248,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
         }
         sb.append(")");
 
-        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString() + " AND " + Schema.StopsTable.STOP_DIRECTION + " = " + (directionSwitch.isChecked() ? "\'1\'" : "\'0\'"), null, null, null, Schema.StopsTable.STOP_ORDER);
+        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.ID_COL + " IN " + sb.toString() + " AND " + Schema.StopsTable.STOP_DIRECTION + " = " + (directionSwitch.isChecked() ? "\'1\'" : "\'0\'"), null, null, null, Schema.StopsTable.STOP_ORDER);
 
         if (cursor.getCount() > 0) {
             LatLngBounds bounds = addStopMarkersToMap(cursor);
@@ -259,6 +261,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
             } else {
                 stopsAdapter.loadNewCursor(cursor);
             }
+            stopsSpinner.setSelection(0);
         } else {
             getStopsForRoute(currentRoute.getRouteId());
         }
@@ -425,10 +428,14 @@ public class AddNewRouteActivity extends ActionBarActivity {
     public void stopReturned(OttoBusEvent.StopsPersistedEvent event) {
         List<RouteStop> routeStops = new ArrayList<>();
 
-        for (Stop s : event.getStops()) {
-            RouteStop rs = new RouteStop(event.getRouteId(), s.getStopId(), getDirectionString());
+
+        for (Long id : event.getIds()) {
+            RouteStop rs = new RouteStop(event.getRouteId(), id, getDirectionString());
             routeStops.add(rs);
         }
+
+
+        //TODO: Get stop from DB instead
 
         PersistRouteStopsInDbTask persistRouteStopsInDbTask = new PersistRouteStopsInDbTask(event.getRouteId(), getDirectionString());
         persistRouteStopsInDbTask.execute(routeStops);

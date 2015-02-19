@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class PersistStopsInDbTask extends AsyncTask<List<Stop>, Void, Void> {
+public class PersistStopsInDbTask extends AsyncTask<List<Stop>, Void, List<Long>> {
 
     private String routeId;
     private String direction;
@@ -27,7 +27,7 @@ public class PersistStopsInDbTask extends AsyncTask<List<Stop>, Void, Void> {
 
     @SafeVarargs
     @Override
-    protected final Void doInBackground(List<Stop>... params) {
+    protected final List<Long> doInBackground(List<Stop>... params) {
         if (params[0] == null) {
             return null;
         }
@@ -52,13 +52,12 @@ public class PersistStopsInDbTask extends AsyncTask<List<Stop>, Void, Void> {
             }
         }
 
-        dbAdapter.batchPersist(updatedStops, Schema.StopsTable.TABLE_NAME);
-        return null;
+        return dbAdapter.batchPersistAndReturnIds(updatedStops, Schema.StopsTable.TABLE_NAME);
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.StopsPersistedEvent(routeId, stops));
+    protected void onPostExecute(List<Long> ids) {
+        super.onPostExecute(ids);
+        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.StopsPersistedEvent(routeId, ids));
     }
 }
