@@ -144,7 +144,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
                 currentStop = stop;
 
                 Marker marker = currentlyVisibleMarkers.get(position);
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16f));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16f));
                 marker.showInfoWindow();
             }
 
