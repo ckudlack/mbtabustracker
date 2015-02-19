@@ -43,6 +43,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
@@ -79,6 +80,8 @@ public class AddNewRouteActivity extends ActionBarActivity {
 
     protected Fragment mapFragment;
     protected GoogleMap map;
+
+    private List<Marker> currentlyVisibleMarkers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +141,10 @@ public class AddNewRouteActivity extends ActionBarActivity {
                 stop.buildFromCursor(c, dbAdapter);
 
                 currentStop = stop;
+
+                Marker marker = currentlyVisibleMarkers.get(position);
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16f));
+                marker.showInfoWindow();
             }
 
             @Override
@@ -179,6 +186,14 @@ public class AddNewRouteActivity extends ActionBarActivity {
             @Override
             public void onMapLoaded() {
                 //TODO Something here
+            }
+        });
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                int markerIndex = currentlyVisibleMarkers.indexOf(marker);
+                stopsSpinner.setSelection(markerIndex);
+                return false;
             }
         });
 
@@ -299,6 +314,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
 
     private LatLngBounds addStopMarkersToMap(Cursor c) {
         map.clear();
+        currentlyVisibleMarkers.clear();
 
         LatLngBounds.Builder builder = LatLngBounds.builder();
 
@@ -322,7 +338,8 @@ public class AddNewRouteActivity extends ActionBarActivity {
             polylineOptions.add(pos);
             polylineOptions.visible(true);
 
-            map.addMarker(markerOptions);
+            Marker marker = map.addMarker(markerOptions);
+            currentlyVisibleMarkers.add(marker);
         }
 
         map.addPolyline(polylineOptions);
