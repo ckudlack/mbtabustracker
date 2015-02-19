@@ -29,7 +29,7 @@ public class Trip {
     @SerializedName("pre_away")
     @Expose
     private String preAway;
-
+    @SerializedName("stop")
     @Expose
     List<StopTime> stopTimeList = new ArrayList<>();
 

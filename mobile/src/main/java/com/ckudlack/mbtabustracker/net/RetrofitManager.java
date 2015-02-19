@@ -21,7 +21,7 @@ import timber.log.Timber;
 public class RetrofitManager {
 
     private static final Gson gson = new GsonBuilder().create();
-    public static final String API_KEY = "";
+    public static final String API_KEY = "a3pkaUJwEk-9u0nvkL_Byw";
     public static final String FORMAT = "json";
 
     private static RestAdapter MBTA_RT_REST_ADAPTER = new RestAdapter.Builder()
@@ -75,7 +75,7 @@ public class RetrofitManager {
         void getStopsByLocation(@Query("api_key") String apiKey, @Query("format") String format, @Query("lat") float latitude, @Query("lon") float longitude, Callback<StopsNearMeWrapper> callback);
 
         @GET("/scheduleByRoute")
-        void getScheduleByRoute(@Query("api_key") String apiKey, @Query("format") String format, @Query("route") String routeId, Callback<RouteScheduleWrapper> callback);
+        void getScheduleByRoute(@Query("api_key") String apiKey, @Query("format") String format, @Query("route") String routeId, @Query("direction") String direction, Callback<RouteScheduleWrapper> callback);
 
         //TODO: Add get vehicles by route
 

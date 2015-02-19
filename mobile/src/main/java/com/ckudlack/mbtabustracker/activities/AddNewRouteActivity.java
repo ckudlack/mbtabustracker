@@ -1,5 +1,6 @@
 package com.ckudlack.mbtabustracker.activities;
 
+import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
@@ -36,6 +37,14 @@ import com.ckudlack.mbtabustracker.models.Stop;
 import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.IoUtils;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
 
@@ -68,10 +77,13 @@ public class AddNewRouteActivity extends ActionBarActivity {
     private Route currentRoute;
     private Stop currentStop;
 
+    protected Fragment mapFragment;
+    protected GoogleMap map;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_landing);
+        setContentView(R.layout.activity_add_new_route);
 
         dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
 
@@ -154,6 +166,22 @@ public class AddNewRouteActivity extends ActionBarActivity {
                 addStopToFavorites();
             }
         });
+
+        mapFragment = getFragmentManager().findFragmentById(R.id.route_map);
+        map = ((MapFragment) mapFragment).getMap();
+        map.getUiSettings().setMyLocationButtonEnabled(false);
+        UiSettings uiSettings = map.getUiSettings();
+        uiSettings.setZoomControlsEnabled(false);
+        uiSettings.setCompassEnabled(false);
+        uiSettings.setRotateGesturesEnabled(false);
+
+        map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                //TODO Something here
+            }
+        });
+
     }
 
     private void addStopToFavorites() {
@@ -206,6 +234,9 @@ public class AddNewRouteActivity extends ActionBarActivity {
         cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.STOP_ID + " IN " + sb.toString() + " AND " + Schema.StopsTable.STOP_DIRECTION + " = " + (directionSwitch.isChecked() ? "\'1\'" : "\'0\'"), null, null, null, Schema.StopsTable.STOP_ORDER);
 
         if (cursor.getCount() > 0) {
+            LatLngBounds bounds = addStopMarkersToMap(cursor);
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
+
             cursor.moveToFirst();
             if (stopsAdapter == null) {
                 stopsAdapter = new StopsAdapter(this, cursor);
@@ -264,6 +295,39 @@ public class AddNewRouteActivity extends ActionBarActivity {
                 MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
             }
         });
+    }
+
+    private LatLngBounds addStopMarkersToMap(Cursor c) {
+        map.clear();
+
+        LatLngBounds.Builder builder = LatLngBounds.builder();
+
+        PolylineOptions polylineOptions = new PolylineOptions();
+
+        while (c.moveToNext()) {
+            MarkerOptions markerOptions = new MarkerOptions();
+            String latString = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_LAT));
+            String lngString = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_LONG));
+            String stopName = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_NAME));
+
+            LatLng pos = new LatLng(Double.parseDouble(latString), Double.parseDouble(lngString));
+
+            markerOptions.position(pos);
+            markerOptions.draggable(false);
+            markerOptions.visible(true);
+            markerOptions.title(stopName);
+
+            builder.include(pos);
+
+            polylineOptions.add(pos);
+            polylineOptions.visible(true);
+
+            map.addMarker(markerOptions);
+        }
+
+        map.addPolyline(polylineOptions);
+
+        return builder.build();
     }
 
     @Override
