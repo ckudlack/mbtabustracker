@@ -32,6 +32,8 @@ public class Trip {
     @SerializedName("stop")
     @Expose
     List<StopTime> stopTimeList = new ArrayList<>();
+    @Expose
+    Vehicle vehicle;
 
     /**
      * @return The tripId
@@ -137,5 +139,13 @@ public class Trip {
 
     public void setStopTimeList(List<StopTime> stopTimeList) {
         this.stopTimeList = stopTimeList;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 }

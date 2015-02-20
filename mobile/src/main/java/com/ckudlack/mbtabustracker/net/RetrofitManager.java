@@ -6,6 +6,7 @@ import com.ckudlack.mbtabustracker.models.RouteScheduleWrapper;
 import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
 import com.ckudlack.mbtabustracker.models.StopsNearMeWrapper;
+import com.ckudlack.mbtabustracker.models.VehicleInfoWrapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -77,7 +78,8 @@ public class RetrofitManager {
         @GET("/scheduleByRoute")
         void getScheduleByRoute(@Query("api_key") String apiKey, @Query("format") String format, @Query("route") String routeId, @Query("direction") String direction, Callback<RouteScheduleWrapper> callback);
 
-        //TODO: Add get vehicles by route
+        @GET("/vehiclesByRoute")
+        void getVehiclesByRoute(@Query("api_key") String apiKey, @Query("format") String format, @Query("route") String routeId, Callback<VehicleInfoWrapper> callback);
 
     }
 

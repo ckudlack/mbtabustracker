@@ -4,6 +4,7 @@ import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
 import com.ckudlack.mbtabustracker.models.Favorite;
 import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.StopTime;
+import com.ckudlack.mbtabustracker.models.Trip;
 
 import java.util.List;
 
@@ -110,6 +111,18 @@ public class OttoBusEvent {
 
         public List<StopTime> getStopTimes() {
             return stopTimes;
+        }
+    }
+
+    public static class VehicleInfoReturnedEvent extends OttoBusEvent {
+        List<Trip> trips;
+
+        public VehicleInfoReturnedEvent(List<Trip> trips) {
+            this.trips = trips;
+        }
+
+        public List<Trip> getTrips() {
+            return trips;
         }
     }
 }

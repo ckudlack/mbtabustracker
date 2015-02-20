@@ -18,18 +18,26 @@ import com.ckudlack.mbtabustracker.models.RouteScheduleWrapper;
 import com.ckudlack.mbtabustracker.models.RouteStop;
 import com.ckudlack.mbtabustracker.models.StopTime;
 import com.ckudlack.mbtabustracker.models.Trip;
+import com.ckudlack.mbtabustracker.models.Vehicle;
+import com.ckudlack.mbtabustracker.models.VehicleInfoWrapper;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.MapUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -42,9 +50,11 @@ public class RouteMapActivity extends ActionBarActivity {
 
     private DBAdapter dbAdapter;
     private List<Marker> currentlyVisibleMarkers = new ArrayList<>();
+    private List<Marker> busMarkers = new ArrayList<>();
     private String routeId;
     private String direction;
 
+    private Timer timer = new Timer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +90,26 @@ public class RouteMapActivity extends ActionBarActivity {
                 Trip trip = direction.getTrip().get(0);
                 List<StopTime> stopTimeList = trip.getStopTimeList();
                 MbtaBusTrackerApplication.bus.post(new OttoBusEvent.StopTimesReturnedEvent(stopTimeList));
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
+            }
+        });
+    }
+
+    private void getVehicleLocations() {
+        RetrofitManager.getRealtimeService().getVehiclesByRoute(RetrofitManager.API_KEY, RetrofitManager.FORMAT, routeId, new Callback<VehicleInfoWrapper>() {
+            @Override
+            public void success(VehicleInfoWrapper vehicleInfoWrapper, Response response) {
+                List<Direction> directions = vehicleInfoWrapper.getDirection();
+                for (Direction d : directions) {
+                    if (d.getDirectionId().equals(direction)) {
+                        MbtaBusTrackerApplication.bus.post(new OttoBusEvent.VehicleInfoReturnedEvent(d.getTrip()));
+                        return;
+                    }
+                }
             }
 
             @Override
@@ -130,16 +160,69 @@ public class RouteMapActivity extends ActionBarActivity {
         Marker marker = currentlyVisibleMarkers.get(Integer.parseInt(order) - 1);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16f));
         marker.showInfoWindow();
+
+        getVehicleLocations();
+    }
+
+    @Subscribe
+    public void vehicleInfoReturned(OttoBusEvent.VehicleInfoReturnedEvent event) {
+        for (Marker m : busMarkers) {
+            m.remove();
+        }
+
+        busMarkers.clear();
+
+        List<Trip> trips = event.getTrips();
+
+        //Test with just 1 for now
+        Vehicle vehicle = trips.get(0).getVehicle();
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(new LatLng(Double.parseDouble(vehicle.getVehicleLat()), Double.parseDouble(vehicle.getVehicleLon())));
+        markerOptions.visible(true);
+        markerOptions.draggable(false);
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.bus_small);
+
+        markerOptions.icon(icon);
+        Marker marker = map.addMarker(markerOptions);
+        busMarkers.add(marker);
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getVehicleLocations();
+                    }
+                });
+            }
+        }, 15000);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         MbtaBusTrackerApplication.bus.register(this);
+        if (timer == null) {
+            timer = new Timer();
+        }
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getVehicleLocations();
+                    }
+                });
+            }
+        }, 15000);
     }
 
     @Override
     protected void onPause() {
+        timer.cancel();
         MbtaBusTrackerApplication.bus.unregister(this);
         super.onPause();
     }
