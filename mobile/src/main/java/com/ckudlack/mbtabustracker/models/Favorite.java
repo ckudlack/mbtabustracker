@@ -9,6 +9,7 @@ public class Favorite {
     String routeName;
     String stopName;
     String predictions;
+    String order;
 
     public Favorite() {
     }
@@ -68,5 +69,13 @@ public class Favorite {
 
     public void setPredictions(String predictions) {
         this.predictions = predictions;
+    }
+
+    public String getOrder() {
+        return order;
+    }
+
+    public void setOrder(String order) {
+        this.order = order;
     }
 }

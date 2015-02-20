@@ -3,6 +3,7 @@ package com.ckudlack.mbtabustracker;
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
 import com.ckudlack.mbtabustracker.models.Favorite;
 import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
+import com.ckudlack.mbtabustracker.models.StopTime;
 
 import java.util.List;
 
@@ -97,6 +98,18 @@ public class OttoBusEvent {
 
         public Favorite getFavorite() {
             return favorite;
+        }
+    }
+
+    public static class StopTimesReturnedEvent extends OttoBusEvent {
+        private List<StopTime> stopTimes;
+
+        public StopTimesReturnedEvent(List<StopTime> stopTimes) {
+            this.stopTimes = stopTimes;
+        }
+
+        public List<StopTime> getStopTimes() {
+            return stopTimes;
         }
     }
 }

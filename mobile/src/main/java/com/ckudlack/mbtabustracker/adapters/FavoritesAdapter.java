@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.ckudlack.mbtabustracker.R;
@@ -13,10 +14,16 @@ import java.util.List;
 
 public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.ViewHolder> {
 
-    List<Favorite> favorites;
+    public interface ItemClickedCallback {
+        public void onListItemClicked(int position);
+    }
 
-    public FavoritesAdapter(List<Favorite> favorites) {
+    List<Favorite> favorites;
+    ItemClickedCallback callback;
+
+    public FavoritesAdapter(List<Favorite> favorites, ItemClickedCallback callback) {
         this.favorites = favorites;
+        this.callback = callback;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -24,7 +31,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
         TextView routeName;
         TextView predictionTimes;
         TextView stopName;
-
+        RelativeLayout rootView;
 
         public ViewHolder(View v) {
             super(v);
@@ -33,6 +40,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             routeName = (TextView) v.findViewById(R.id.title);
             predictionTimes = (TextView) v.findViewById(R.id.prediction_times);
             stopName = (TextView) v.findViewById(R.id.stop_name);
+            rootView = (RelativeLayout) v.findViewById(R.id.card_root_view);
         }
     }
 
@@ -46,11 +54,17 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(ViewHolder viewHolder, final int i) {
         Favorite favorite = favorites.get(i);
         viewHolder.routeName.setText("Route " + favorite.getRouteName());
         viewHolder.stopName.setText(favorite.getStopName());
         viewHolder.predictionTimes.setText(favorite.getPredictions());
+        viewHolder.rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callback.onListItemClicked(i);
+            }
+        });
     }
 
     @Override

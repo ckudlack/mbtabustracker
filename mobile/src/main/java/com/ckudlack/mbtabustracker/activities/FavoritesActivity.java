@@ -38,7 +38,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import timber.log.Timber;
 
-public class FavoritesActivity extends ActionBarActivity {
+public class FavoritesActivity extends ActionBarActivity implements FavoritesAdapter.ItemClickedCallback {
 
     private static final int ADD_FAV_REQ_CODE = 324;
 
@@ -76,7 +76,7 @@ public class FavoritesActivity extends ActionBarActivity {
 
         favoritesList = getFavoritesFromSharedPrefs();
 
-        adapter = new FavoritesAdapter(favoritesList);
+        adapter = new FavoritesAdapter(favoritesList, this);
         recyclerView.setAdapter(adapter);
 
         getPredictionsForFavStop(favoritesList);
@@ -202,5 +202,15 @@ public class FavoritesActivity extends ActionBarActivity {
                 }
             }
         }
+    }
+
+    @Override
+    public void onListItemClicked(int position) {
+        Favorite favorite = favoritesList.get(position);
+        Intent intent = new Intent(this, RouteMapActivity.class);
+        intent.putExtra(Constants.ROUTE_ID_KEY, favorite.getRouteId());
+        intent.putExtra(Constants.DIRECTION_KEY, favorite.getDirectionId());
+        intent.putExtra(Constants.STOP_KEY, favorite.getOrder());
+        startActivity(intent);
     }
 }

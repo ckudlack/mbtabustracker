@@ -28,16 +28,21 @@ import com.ckudlack.mbtabustracker.async.PersistStopsInDbTask;
 import com.ckudlack.mbtabustracker.database.DBAdapter;
 import com.ckudlack.mbtabustracker.database.Schema;
 import com.ckudlack.mbtabustracker.models.AllRoutesWrapper;
+import com.ckudlack.mbtabustracker.models.Direction;
 import com.ckudlack.mbtabustracker.models.Direction2;
 import com.ckudlack.mbtabustracker.models.Favorite;
 import com.ckudlack.mbtabustracker.models.FeedInfo;
 import com.ckudlack.mbtabustracker.models.Mode;
 import com.ckudlack.mbtabustracker.models.Route;
+import com.ckudlack.mbtabustracker.models.RouteScheduleWrapper;
 import com.ckudlack.mbtabustracker.models.RouteStop;
 import com.ckudlack.mbtabustracker.models.Stop;
+import com.ckudlack.mbtabustracker.models.StopTime;
 import com.ckudlack.mbtabustracker.models.StopsByRouteWrapper;
+import com.ckudlack.mbtabustracker.models.Trip;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.IoUtils;
+import com.ckudlack.mbtabustracker.utils.MapUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -79,8 +84,8 @@ public class AddNewRouteActivity extends ActionBarActivity {
     private Route currentRoute;
     private Stop currentStop;
 
-    protected Fragment mapFragment;
-    protected GoogleMap map;
+    private Fragment mapFragment;
+    private GoogleMap map;
 
     private List<Marker> currentlyVisibleMarkers = new ArrayList<>();
 
@@ -122,7 +127,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
                 if (routeStops == null) {
                     getStopsForRoute(routeId);
                 } else {
-                    getStopsFromForeignKey(routeStops);
+                    getScheduledStops();
                 }
             }
 
@@ -162,7 +167,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (currentRoute != null) {
                     List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, currentRoute.getRouteId());
-                    getStopsFromForeignKey(routeStops);
+                    getScheduledStops();
                 }
             }
         });
@@ -200,6 +205,23 @@ public class AddNewRouteActivity extends ActionBarActivity {
 
     }
 
+    private void getScheduledStops() {
+        RetrofitManager.getRealtimeService().getScheduleByRoute(RetrofitManager.API_KEY, RetrofitManager.FORMAT, currentRoute.getRouteId(), getDirectionString(), new Callback<RouteScheduleWrapper>() {
+            @Override
+            public void success(RouteScheduleWrapper routeScheduleWrapper, Response response) {
+                Direction direction = routeScheduleWrapper.getDirection().get(0);
+                Trip trip = direction.getTrip().get(0);
+                List<StopTime> stopTimeList = trip.getStopTimeList();
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.StopTimesReturnedEvent(stopTimeList));
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
+            }
+        });
+    }
+
     private void addStopToFavorites() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Set<String> stringSet;
@@ -212,6 +234,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
         favorite.setRouteName(currentRoute.getRouteName());
         favorite.setDirectionName(directionSwitch.isChecked() ? "Inbound" : "Outbound");
         favorite.setDirectionId(getDirectionString());
+        favorite.setOrder(currentStop.getStopOrder());
 
         Gson gson = new Gson();
         String fav = gson.toJson(favorite, Favorite.class);
@@ -233,38 +256,6 @@ public class AddNewRouteActivity extends ActionBarActivity {
 
     private String getDirectionString() {
         return directionSwitch.isChecked() ? "1" : "0";
-    }
-
-    private void getStopsFromForeignKey(List<RouteStop> routeStops) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("(");
-        for (int i = 0; i < routeStops.size(); i++) {
-            sb.append(routeStops.get(i).getStopDbId());
-            if (i >= routeStops.size() - 1) {
-                break;
-            }
-
-            sb.append(",");
-        }
-        sb.append(")");
-
-        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.ID_COL + " IN " + sb.toString() + " AND " + Schema.StopsTable.STOP_DIRECTION + " = " + (directionSwitch.isChecked() ? "\'1\'" : "\'0\'"), null, null, null, Schema.StopsTable.STOP_ORDER);
-
-        if (cursor.getCount() > 0) {
-            LatLngBounds bounds = addStopMarkersToMap(cursor);
-            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
-
-            cursor.moveToFirst();
-            if (stopsAdapter == null) {
-                stopsAdapter = new StopsAdapter(this, cursor);
-                stopsSpinner.setAdapter(stopsAdapter);
-            } else {
-                stopsAdapter.loadNewCursor(cursor);
-            }
-            stopsSpinner.setSelection(0);
-        } else {
-            getStopsForRoute(currentRoute.getRouteId());
-        }
     }
 
     private void setRoutesSpinner() {
@@ -444,7 +435,56 @@ public class AddNewRouteActivity extends ActionBarActivity {
     @Subscribe
     public void routeStopReturned(OttoBusEvent.RouteStopsPersistedEvent event) {
         List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, event.getRouteId());
-        getStopsFromForeignKey(routeStops);
+        getScheduledStops();
+    }
+
+    @Subscribe
+    public void stopTimesReturned(OttoBusEvent.StopTimesReturnedEvent event) {
+        List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, currentRoute.getRouteId());
+
+        StringBuilder dbIdsListBuilder = new StringBuilder();
+        dbIdsListBuilder.append("(");
+        for (int i = 0; i < routeStops.size(); i++) {
+            dbIdsListBuilder.append(routeStops.get(i).getStopDbId());
+            if (i >= routeStops.size() - 1) {
+                break;
+            }
+
+            dbIdsListBuilder.append(",");
+        }
+        dbIdsListBuilder.append(")");
+
+        List<StopTime> stopTimes = event.getStopTimes();
+
+        StringBuilder dbStopIdsListBuilder = new StringBuilder();
+        dbStopIdsListBuilder.append("(");
+        for (int i = 0; i < stopTimes.size(); i++) {
+            dbStopIdsListBuilder.append(stopTimes.get(i).getStopId());
+            if (i >= stopTimes.size() - 1) {
+                break;
+            }
+
+            dbStopIdsListBuilder.append(",");
+        }
+        dbStopIdsListBuilder.append(")");
+
+        cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.ID_COL + " IN " + dbIdsListBuilder.toString() + " AND " + Schema.StopsTable.STOP_DIRECTION + " = " + (directionSwitch.isChecked() ? "\'1\'" : "\'0\'") + " AND " + Schema.StopsTable.STOP_ID + " IN " + dbStopIdsListBuilder.toString(), null, null, null, Schema.StopsTable.STOP_ORDER);
+
+        if (cursor.getCount() > 0) {
+            LatLngBounds bounds = MapUtils.addStopMarkersToMap(cursor, map, currentlyVisibleMarkers);
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
+
+            cursor.moveToFirst();
+            if (stopsAdapter == null) {
+                stopsAdapter = new StopsAdapter(this, cursor);
+                stopsSpinner.setAdapter(stopsAdapter);
+            } else {
+                stopsAdapter.loadNewCursor(cursor);
+            }
+            stopsSpinner.setSelection(0);
+        } else {
+            getStopsForRoute(currentRoute.getRouteId());
+        }
     }
 
     @Override
