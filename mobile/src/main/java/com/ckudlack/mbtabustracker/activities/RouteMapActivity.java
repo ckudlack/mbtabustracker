@@ -187,17 +187,7 @@ public class RouteMapActivity extends ActionBarActivity {
         Marker marker = map.addMarker(markerOptions);
         busMarkers.add(marker);
 
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getVehicleLocations();
-                    }
-                });
-            }
-        }, 15000);
+        scheduleBusLocationUpdate();
     }
 
     @Override
@@ -207,6 +197,10 @@ public class RouteMapActivity extends ActionBarActivity {
         if (timer == null) {
             timer = new Timer();
         }
+        scheduleBusLocationUpdate();
+    }
+
+    private void scheduleBusLocationUpdate() {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
