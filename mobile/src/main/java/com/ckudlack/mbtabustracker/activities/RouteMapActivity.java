@@ -194,9 +194,7 @@ public class RouteMapActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         MbtaBusTrackerApplication.bus.register(this);
-        if (timer == null) {
-            timer = new Timer();
-        }
+        timer = new Timer();
         scheduleBusLocationUpdate();
     }
 
