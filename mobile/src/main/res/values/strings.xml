@@ -9,4 +9,6 @@
     <string name="route_added">Stop Successfully Added!</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_route_map">RouteMapActivity</string>
+    <string name="action_bar_title_add_route">Add a Route</string>
+    <string name="action_bar_title_favorites">Favorites</string>
 </resources>

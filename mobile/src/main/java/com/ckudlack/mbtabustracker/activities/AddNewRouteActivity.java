@@ -93,6 +93,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
         setContentView(R.layout.activity_add_new_route);
 
         dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
+        getSupportActionBar().setTitle(getString(R.string.action_bar_title_add_route));
 
         RetrofitManager.getFeedService().getUpdateDate(new Callback<Response>() {
             @Override
