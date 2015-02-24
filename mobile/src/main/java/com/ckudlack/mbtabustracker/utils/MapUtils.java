@@ -5,13 +5,9 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.BitmapDrawable;
 
 import com.ckudlack.mbtabustracker.R;
 import com.ckudlack.mbtabustracker.database.Schema;
@@ -24,11 +20,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.List;
+import java.util.HashMap;
 
 public class MapUtils {
 
-    public static LatLngBounds addStopMarkersToMap(Cursor c, GoogleMap map, List<Marker> currentlyVisibleMarkers, Context context) {
+    public static LatLngBounds addStopMarkersToMap(Cursor c, GoogleMap map, HashMap<String, Marker> currentlyVisibleMarkers, Context context) {
         map.clear();
 
         if (currentlyVisibleMarkers != null) {
@@ -54,6 +50,7 @@ public class MapUtils {
             String latString = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_LAT));
             String lngString = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_LONG));
             String stopName = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_NAME));
+            String stopId = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_ID));
 
             LatLng pos = new LatLng(Double.parseDouble(latString), Double.parseDouble(lngString));
 
@@ -70,7 +67,7 @@ public class MapUtils {
 
             Marker marker = map.addMarker(markerOptions);
             if (currentlyVisibleMarkers != null) {
-                currentlyVisibleMarkers.add(marker);
+                currentlyVisibleMarkers.put(stopId, marker);
             }
         }
 

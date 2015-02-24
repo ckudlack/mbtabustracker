@@ -41,6 +41,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -56,11 +57,11 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
     private GoogleMap map;
 
     private DBAdapter dbAdapter;
-    private List<Marker> currentlyVisibleMarkers = new ArrayList<>();
+    private HashMap<String, Marker> currentlyVisibleMarkers = new HashMap<>();
     private List<Marker> busMarkers = new ArrayList<>();
     private String routeId;
     private String direction;
-    private String order;
+    private String stopId;
 
     private Timer timer = new Timer();
 
@@ -81,7 +82,7 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
 
         routeId = getIntent().getStringExtra(Constants.ROUTE_ID_KEY);
         direction = getIntent().getStringExtra(Constants.DIRECTION_KEY);
-        order = getIntent().getStringExtra(Constants.STOP_KEY);
+        stopId = getIntent().getStringExtra(Constants.STOP_KEY);
 
         dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
 
@@ -154,12 +155,12 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
 
         Routing routing = new Routing(Routing.TravelMode.WALKING);
         routing.registerListener(this);
-        Marker marker = currentlyVisibleMarkers.get(Integer.parseInt(order) - 1);
+        Marker marker = currentlyVisibleMarkers.get(stopId);
         routing.execute(new LatLng(42.3670981, -71.0800857), marker.getPosition());
     }
 
     private void zoomToFavoritedStop() {
-        Marker marker = currentlyVisibleMarkers.get(Integer.parseInt(order) - 1);
+        Marker marker = currentlyVisibleMarkers.get(stopId);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16f));
         marker.showInfoWindow();
     }

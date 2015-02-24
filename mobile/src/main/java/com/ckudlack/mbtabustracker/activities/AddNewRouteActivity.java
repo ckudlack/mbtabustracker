@@ -56,6 +56,7 @@ import com.squareup.otto.Subscribe;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -85,7 +86,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
     private Fragment mapFragment;
     private GoogleMap map;
 
-    private List<Marker> currentlyVisibleMarkers = new ArrayList<>();
+    private HashMap<String, Marker> currentlyVisibleMarkers = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,7 +147,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
 
                 currentStop = stop;
 
-                Marker marker = currentlyVisibleMarkers.get(position);
+                Marker marker = currentlyVisibleMarkers.get(currentStop.getStopId());
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16f));
                 marker.showInfoWindow();
             }
@@ -185,17 +186,12 @@ public class AddNewRouteActivity extends ActionBarActivity {
         uiSettings.setCompassEnabled(false);
         uiSettings.setRotateGesturesEnabled(false);
 
-        map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-            @Override
-            public void onMapLoaded() {
-                //TODO Something here
-            }
-        });
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                int markerIndex = currentlyVisibleMarkers.indexOf(marker);
-                stopsSpinner.setSelection(markerIndex);
+                //TODO: Fix this
+//                int markerIndex = currentlyVisibleMarkers.
+//                stopsSpinner.setSelection(markerIndex);
                 return false;
             }
         });
@@ -232,6 +228,8 @@ public class AddNewRouteActivity extends ActionBarActivity {
         favorite.setDirectionName(directionSwitch.isChecked() ? "Inbound" : "Outbound");
         favorite.setDirectionId(getDirectionString());
         favorite.setOrder(currentStop.getStopOrder());
+        favorite.setLatitude(Double.parseDouble(currentStop.getStopLat()));
+        favorite.setLongitude(Double.parseDouble(currentStop.getStopLon()));
 
         Gson gson = new Gson();
         String fav = gson.toJson(favorite, Favorite.class);

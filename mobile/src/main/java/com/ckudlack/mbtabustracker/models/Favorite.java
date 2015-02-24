@@ -10,6 +10,8 @@ public class Favorite {
     String stopName;
     String predictions;
     String order;
+    double longitude;
+    double latitude;
 
     public Favorite() {
     }
@@ -77,5 +79,21 @@ public class Favorite {
 
     public void setOrder(String order) {
         this.order = order;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 }

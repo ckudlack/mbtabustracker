@@ -25,6 +25,7 @@ import com.ckudlack.mbtabustracker.models.Route;
 import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.Trip;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
+import com.directions.route.RoutingListener;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,6 +33,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
 
@@ -50,7 +52,8 @@ import timber.log.Timber;
 public class FavoritesActivity extends ActionBarActivity implements FavoritesAdapter.ItemClickedCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        LocationListener,
+        RoutingListener {
 
     private static final int ADD_FAV_REQ_CODE = 324;
 
@@ -114,6 +117,11 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     private void getPredictionsForFavStop(final List<Favorite> favoritesList) {
         if (favoritesList.size() == 0) {
             adapter.updateList(this.favoritesList);
+
+            /*Routing routing = new Routing(Routing.TravelMode.WALKING);
+            routing.registerListener(this);
+            Marker marker = currentlyVisibleMarkers.get(Integer.parseInt(order) - 1);
+            routing.execute(new LatLng(42.3670981, -71.0800857), marker.getPosition());*/
             return;
         }
 
@@ -133,6 +141,7 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
             }
         });
     }
+
 
     private List<Favorite> getFavoritesFromSharedPrefs() {
         List<Favorite> favoritesList = new ArrayList<>();
@@ -268,8 +277,9 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
         Intent intent = new Intent(this, RouteMapActivity.class);
         intent.putExtra(Constants.ROUTE_ID_KEY, favorite.getRouteId());
         intent.putExtra(Constants.DIRECTION_KEY, favorite.getDirectionId());
-        intent.putExtra(Constants.STOP_KEY, favorite.getOrder());
+        intent.putExtra(Constants.ORDER_KEY, favorite.getOrder());
         intent.putExtra(Constants.STOP_NAME_KEY, favorite.getStopName());
+        intent.putExtra(Constants.STOP_KEY, favorite.getStopId());
         startActivity(intent);
     }
 
@@ -296,5 +306,19 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
+    }
+
+    @Override
+    public void onRoutingFailure() {
+
+    }
+
+    @Override
+    public void onRoutingStart() {
+
+    }
+
+    @Override
+    public void onRoutingSuccess(PolylineOptions mPolyOptions, com.directions.route.Route route) {
     }
 }
