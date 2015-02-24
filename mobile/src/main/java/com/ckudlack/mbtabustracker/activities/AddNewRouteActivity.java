@@ -47,11 +47,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.UiSettings;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
 
@@ -306,41 +303,6 @@ public class AddNewRouteActivity extends ActionBarActivity {
         });
     }
 
-    private LatLngBounds addStopMarkersToMap(Cursor c) {
-        map.clear();
-        currentlyVisibleMarkers.clear();
-
-        LatLngBounds.Builder builder = LatLngBounds.builder();
-
-        PolylineOptions polylineOptions = new PolylineOptions();
-
-        while (c.moveToNext()) {
-            MarkerOptions markerOptions = new MarkerOptions();
-            String latString = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_LAT));
-            String lngString = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_LONG));
-            String stopName = c.getString(c.getColumnIndex(Schema.StopsTable.STOP_NAME));
-
-            LatLng pos = new LatLng(Double.parseDouble(latString), Double.parseDouble(lngString));
-
-            markerOptions.position(pos);
-            markerOptions.draggable(false);
-            markerOptions.visible(true);
-            markerOptions.title(stopName);
-
-            builder.include(pos);
-
-            polylineOptions.add(pos);
-            polylineOptions.visible(true);
-
-            Marker marker = map.addMarker(markerOptions);
-            currentlyVisibleMarkers.add(marker);
-        }
-
-        map.addPolyline(polylineOptions);
-
-        return builder.build();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -424,7 +386,6 @@ public class AddNewRouteActivity extends ActionBarActivity {
             RouteStop rs = new RouteStop(event.getRouteId(), id, getDirectionString());
             routeStops.add(rs);
         }
-
 
         //TODO: Get stop from DB instead
 
