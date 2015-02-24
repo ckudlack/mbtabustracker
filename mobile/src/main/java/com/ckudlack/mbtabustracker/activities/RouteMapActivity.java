@@ -22,6 +22,7 @@ import com.ckudlack.mbtabustracker.models.Vehicle;
 import com.ckudlack.mbtabustracker.models.VehicleInfoWrapper;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.MapUtils;
+import com.ckudlack.mbtabustracker.utils.StringUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -123,33 +124,13 @@ public class RouteMapActivity extends ActionBarActivity {
     public void stopTimeReturned(OttoBusEvent.StopTimesReturnedEvent event) {
         List<RouteStop> routeStops = dbAdapter.getRouteStops(Schema.RouteStopsTable.ROUTE_ID, routeId);
 
-        StringBuilder dbIdsListBuilder = new StringBuilder();
-        dbIdsListBuilder.append("(");
-        for (int i = 0; i < routeStops.size(); i++) {
-            dbIdsListBuilder.append(routeStops.get(i).getStopDbId());
-            if (i >= routeStops.size() - 1) {
-                break;
-            }
-
-            dbIdsListBuilder.append(",");
-        }
-        dbIdsListBuilder.append(")");
+        String dbIdsList = StringUtils.buildDbIdList(routeStops);
 
         List<StopTime> stopTimes = event.getStopTimes();
 
-        StringBuilder stopIdsListBuilder = new StringBuilder();
-        stopIdsListBuilder.append("(");
-        for (int i = 0; i < stopTimes.size(); i++) {
-            stopIdsListBuilder.append(stopTimes.get(i).getStopId());
-            if (i >= stopTimes.size() - 1) {
-                break;
-            }
+        String dbStopIdsList = StringUtils.buildStopIdList(stopTimes);
 
-            stopIdsListBuilder.append(",");
-        }
-        stopIdsListBuilder.append(")");
-
-        Cursor cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.ID_COL + " IN " + dbIdsListBuilder.toString() + " AND " + Schema.StopsTable.STOP_DIRECTION + " = \'" + direction + "\'" + " AND " + Schema.StopsTable.STOP_ID + " IN " + stopIdsListBuilder.toString(), null, null, null, Schema.StopsTable.STOP_ORDER);
+        Cursor cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.ID_COL + " IN " + dbIdsList + " AND " + Schema.StopsTable.STOP_DIRECTION + " = \'" + direction + "\'" + " AND " + Schema.StopsTable.STOP_ID + " IN " + dbStopIdsList, null, null, null, Schema.StopsTable.STOP_ORDER);
 
         if (cursor.getCount() > 0) {
             LatLngBounds bounds = MapUtils.addStopMarkersToMap(cursor, map, currentlyVisibleMarkers);
