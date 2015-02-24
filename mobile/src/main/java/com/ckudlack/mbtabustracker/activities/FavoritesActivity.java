@@ -2,6 +2,7 @@ package com.ckudlack.mbtabustracker.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -25,6 +26,12 @@ import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.Trip;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
 
@@ -40,7 +47,10 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import timber.log.Timber;
 
-public class FavoritesActivity extends ActionBarActivity implements FavoritesAdapter.ItemClickedCallback {
+public class FavoritesActivity extends ActionBarActivity implements FavoritesAdapter.ItemClickedCallback,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     private static final int ADD_FAV_REQ_CODE = 324;
 
@@ -50,10 +60,17 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     private List<Favorite> favoritesList;
     private Timer timer = new Timer();
 
+    protected LatLng position;
+
+    private GoogleApiClient locationClient;
+    private LocationRequest locationRequest;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorites);
+
+        setupLocationServices();
 
         FloatingActionButton button = (FloatingActionButton) findViewById(R.id.floating_button);
         button.setSize(FloatingActionButton.SIZE_NORMAL);
@@ -83,6 +100,15 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
         recyclerView.setAdapter(adapter);
 
         getPredictionsForFavStop(favoritesList);
+    }
+
+    private void setupLocationServices() {
+        locationClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        locationClient.connect();
     }
 
     private void getPredictionsForFavStop(final List<Favorite> favoritesList) {
@@ -163,6 +189,18 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        locationClient.connect();
+    }
+
+    @Override
+    protected void onDestroy() {
+        locationClient.disconnect();
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_favorites, menu);
@@ -233,5 +271,30 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
         intent.putExtra(Constants.STOP_KEY, favorite.getOrder());
         intent.putExtra(Constants.STOP_NAME_KEY, favorite.getStopName());
         startActivity(intent);
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(2 * 60 * 1000); // Update location every second
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                locationClient, locationRequest, this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        position = new LatLng(location.getLatitude(), location.getLongitude());
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 }

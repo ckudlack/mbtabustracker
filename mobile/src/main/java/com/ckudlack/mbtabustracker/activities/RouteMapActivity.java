@@ -71,11 +71,13 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
 
         mapFragment = getFragmentManager().findFragmentById(R.id.route_map);
         map = ((MapFragment) mapFragment).getMap();
-        map.getUiSettings().setMyLocationButtonEnabled(false);
+        map.setMyLocationEnabled(true);
+
         UiSettings uiSettings = map.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
         uiSettings.setCompassEnabled(false);
         uiSettings.setRotateGesturesEnabled(false);
+        uiSettings.setMyLocationButtonEnabled(true);
 
         routeId = getIntent().getStringExtra(Constants.ROUTE_ID_KEY);
         direction = getIntent().getStringExtra(Constants.DIRECTION_KEY);
@@ -91,8 +93,6 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
         });
 
         getSupportActionBar().setTitle(getIntent().getStringExtra(Constants.STOP_NAME_KEY));
-
-
     }
 
     private void getScheduledStops() {
@@ -155,7 +155,7 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
         Routing routing = new Routing(Routing.TravelMode.WALKING);
         routing.registerListener(this);
         Marker marker = currentlyVisibleMarkers.get(Integer.parseInt(order) - 1);
-        routing.execute(new LatLng(42.3670981,-71.0800857), marker.getPosition());
+        routing.execute(new LatLng(42.3670981, -71.0800857), marker.getPosition());
     }
 
     private void zoomToFavoritedStop() {
