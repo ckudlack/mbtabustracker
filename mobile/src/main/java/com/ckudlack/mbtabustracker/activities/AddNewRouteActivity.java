@@ -93,7 +93,6 @@ public class AddNewRouteActivity extends ActionBarActivity {
         setContentView(R.layout.activity_add_new_route);
 
         dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
-        getSupportActionBar().setTitle(getString(R.string.action_bar_title_add_route));
 
         RetrofitManager.getFeedService().getUpdateDate(new Callback<Response>() {
             @Override
@@ -412,7 +411,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
         cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.ID_COL + " IN " + dbIdsList + " AND " + Schema.StopsTable.STOP_DIRECTION + " = " + (directionSwitch.isChecked() ? "\'1\'" : "\'0\'") + " AND " + Schema.StopsTable.STOP_ID + " IN " + dbStopIdsList, null, null, null, Schema.StopsTable.STOP_ORDER);
 
         if (cursor.getCount() > 0) {
-            LatLngBounds bounds = MapUtils.addStopMarkersToMap(cursor, map, currentlyVisibleMarkers);
+            LatLngBounds bounds = MapUtils.addStopMarkersToMap(cursor, map, currentlyVisibleMarkers, this);
             map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
 
             cursor.moveToFirst();

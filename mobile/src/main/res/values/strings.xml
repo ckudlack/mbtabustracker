@@ -3,8 +3,8 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_favorites">FavoritesActivity</string>
-    <string name="title_activity_add_new_route">AddNewRouteActivity</string>
+    <string name="title_activity_favorites">Favorites</string>
+    <string name="title_activity_add_new_route">Add New Routes</string>
     <string name="maps_api">AIzaSyDLAyaTUNbZkBiDFDhJbrXTMAO7tO76XV4</string>
     <string name="route_added">Stop Successfully Added!</string>
     <string name="title_activity_maps">Map</string>

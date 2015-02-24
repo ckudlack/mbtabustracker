@@ -55,8 +55,6 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorites);
 
-        getSupportActionBar().setTitle(getString(R.string.action_bar_title_favorites));
-
         FloatingActionButton button = (FloatingActionButton) findViewById(R.id.floating_button);
         button.setSize(FloatingActionButton.SIZE_NORMAL);
         button.setColorNormalResId(android.R.color.holo_blue_dark);

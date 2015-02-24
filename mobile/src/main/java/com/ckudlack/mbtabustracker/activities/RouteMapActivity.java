@@ -2,6 +2,7 @@ package com.ckudlack.mbtabustracker.activities;
 
 import android.app.Fragment;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -23,6 +24,9 @@ import com.ckudlack.mbtabustracker.models.VehicleInfoWrapper;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.ckudlack.mbtabustracker.utils.MapUtils;
 import com.ckudlack.mbtabustracker.utils.StringUtils;
+import com.directions.route.Route;
+import com.directions.route.Routing;
+import com.directions.route.RoutingListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -33,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
@@ -43,8 +48,9 @@ import java.util.TimerTask;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+import timber.log.Timber;
 
-public class RouteMapActivity extends ActionBarActivity {
+public class RouteMapActivity extends ActionBarActivity implements RoutingListener {
 
     private Fragment mapFragment;
     private GoogleMap map;
@@ -85,6 +91,8 @@ public class RouteMapActivity extends ActionBarActivity {
         });
 
         getSupportActionBar().setTitle(getIntent().getStringExtra(Constants.STOP_NAME_KEY));
+
+
     }
 
     private void getScheduledStops() {
@@ -137,12 +145,17 @@ public class RouteMapActivity extends ActionBarActivity {
         Cursor cursor = dbAdapter.db.query(Schema.StopsTable.TABLE_NAME, Schema.StopsTable.ALL_COLUMNS, Schema.StopsTable.ID_COL + " IN " + dbIdsList + " AND " + Schema.StopsTable.STOP_DIRECTION + " = \'" + direction + "\'" + " AND " + Schema.StopsTable.STOP_ID + " IN " + dbStopIdsList, null, null, null, Schema.StopsTable.STOP_ORDER);
 
         if (cursor.getCount() > 0) {
-            LatLngBounds bounds = MapUtils.addStopMarkersToMap(cursor, map, currentlyVisibleMarkers);
+            LatLngBounds bounds = MapUtils.addStopMarkersToMap(cursor, map, currentlyVisibleMarkers, this);
             map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
         }
 
         zoomToFavoritedStop();
         getVehicleLocations();
+
+        Routing routing = new Routing(Routing.TravelMode.WALKING);
+        routing.registerListener(this);
+        Marker marker = currentlyVisibleMarkers.get(Integer.parseInt(order) - 1);
+        routing.execute(new LatLng(42.3670981,-71.0800857), marker.getPosition());
     }
 
     private void zoomToFavoritedStop() {
@@ -226,5 +239,25 @@ public class RouteMapActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRoutingFailure() {
+        Timber.e("Failed");
+    }
+
+    @Override
+    public void onRoutingStart() {
+        Timber.d("Start");
+    }
+
+    @Override
+    public void onRoutingSuccess(PolylineOptions mPolyOptions, Route route) {
+        Timber.d("Success");
+        PolylineOptions polyoptions = new PolylineOptions();
+        polyoptions.color(Color.BLUE);
+        polyoptions.width(10);
+        polyoptions.addAll(mPolyOptions.getPoints());
+        map.addPolyline(polyoptions);
     }
 }
