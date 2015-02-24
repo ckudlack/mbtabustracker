@@ -155,18 +155,19 @@ public class RouteMapActivity extends ActionBarActivity {
 
         List<Trip> trips = event.getTrips();
 
-        //Test with just 1 for now
-        Vehicle vehicle = trips.get(0).getVehicle();
+        for (Trip t : trips) {
+            Vehicle vehicle = t.getVehicle();
 
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(new LatLng(Double.parseDouble(vehicle.getVehicleLat()), Double.parseDouble(vehicle.getVehicleLon())));
-        markerOptions.visible(true);
-        markerOptions.draggable(false);
-        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.bus_small);
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(new LatLng(Double.parseDouble(vehicle.getVehicleLat()), Double.parseDouble(vehicle.getVehicleLon())));
+            markerOptions.visible(true);
+            markerOptions.draggable(false);
+            BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.bus_small);
 
-        markerOptions.icon(icon);
-        Marker marker = map.addMarker(markerOptions);
-        busMarkers.add(marker);
+            markerOptions.icon(icon);
+            Marker marker = map.addMarker(markerOptions);
+            busMarkers.add(marker);
+        }
     }
 
     @Override
