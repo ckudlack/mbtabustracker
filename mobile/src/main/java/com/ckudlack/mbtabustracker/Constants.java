@@ -8,4 +8,5 @@ public class Constants {
     public static String ROUTE_ID_KEY = "routeId";
     public static String DIRECTION_KEY = "direction";
     public static String STOP_KEY = "stop";
+    public static String STOP_NAME_KEY = "stopName";
 }

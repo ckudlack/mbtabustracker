@@ -231,6 +231,7 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
         intent.putExtra(Constants.ROUTE_ID_KEY, favorite.getRouteId());
         intent.putExtra(Constants.DIRECTION_KEY, favorite.getDirectionId());
         intent.putExtra(Constants.STOP_KEY, favorite.getOrder());
+        intent.putExtra(Constants.STOP_NAME_KEY, favorite.getStopName());
         startActivity(intent);
     }
 }

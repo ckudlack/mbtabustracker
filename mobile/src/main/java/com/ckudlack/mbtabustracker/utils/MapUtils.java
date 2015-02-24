@@ -24,6 +24,7 @@ public class MapUtils {
         LatLngBounds.Builder builder = LatLngBounds.builder();
 
         PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.width(20f);
 
         while (c.moveToNext()) {
             MarkerOptions markerOptions = new MarkerOptions();

@@ -54,6 +54,7 @@ public class RouteMapActivity extends ActionBarActivity {
     private List<Marker> busMarkers = new ArrayList<>();
     private String routeId;
     private String direction;
+    private String order;
 
     private Timer timer = new Timer();
 
@@ -72,6 +73,7 @@ public class RouteMapActivity extends ActionBarActivity {
 
         routeId = getIntent().getStringExtra(Constants.ROUTE_ID_KEY);
         direction = getIntent().getStringExtra(Constants.DIRECTION_KEY);
+        order = getIntent().getStringExtra(Constants.STOP_KEY);
 
         dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
 
@@ -81,6 +83,8 @@ public class RouteMapActivity extends ActionBarActivity {
                 getScheduledStops();
             }
         });
+
+        getSupportActionBar().setTitle(getIntent().getStringExtra(Constants.STOP_NAME_KEY));
     }
 
     private void getScheduledStops() {
@@ -137,12 +141,14 @@ public class RouteMapActivity extends ActionBarActivity {
             map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
         }
 
-        String order = getIntent().getStringExtra(Constants.STOP_KEY);
+        zoomToFavoritedStop();
+        getVehicleLocations();
+    }
+
+    private void zoomToFavoritedStop() {
         Marker marker = currentlyVisibleMarkers.get(Integer.parseInt(order) - 1);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16f));
         marker.showInfoWindow();
-
-        getVehicleLocations();
     }
 
     @Subscribe
@@ -215,6 +221,7 @@ public class RouteMapActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            zoomToFavoritedStop();
             return true;
         }
 
