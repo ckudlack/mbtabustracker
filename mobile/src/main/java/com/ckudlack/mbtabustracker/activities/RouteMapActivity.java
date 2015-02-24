@@ -186,8 +186,6 @@ public class RouteMapActivity extends ActionBarActivity {
         markerOptions.icon(icon);
         Marker marker = map.addMarker(markerOptions);
         busMarkers.add(marker);
-
-        scheduleBusLocationUpdate();
     }
 
     @Override
@@ -209,7 +207,7 @@ public class RouteMapActivity extends ActionBarActivity {
                     }
                 });
             }
-        }, 15000);
+        }, 3000, 15000);
     }
 
     @Override

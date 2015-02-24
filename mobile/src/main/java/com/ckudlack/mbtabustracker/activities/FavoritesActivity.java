@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -46,6 +48,7 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     private FavoritesAdapter adapter;
     private LinearLayoutManager layoutManager;
     private List<Favorite> favoritesList;
+    private Timer timer = new Timer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,10 +137,27 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     protected void onResume() {
         super.onResume();
         MbtaBusTrackerApplication.bus.register(this);
+        timer = new Timer();
+        scheduleTimer();
+    }
+
+    private void scheduleTimer() {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getPredictionsForFavStop(favoritesList);
+                    }
+                });
+            }
+        }, 5000, 20000);
     }
 
     @Override
     protected void onPause() {
+        timer.cancel();
         MbtaBusTrackerApplication.bus.unregister(this);
         super.onPause();
     }
