@@ -2,9 +2,7 @@ package com.ckudlack.mbtabustracker.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Location;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,12 +25,8 @@ import com.ckudlack.mbtabustracker.models.Trip;
 import com.ckudlack.mbtabustracker.net.RetrofitManager;
 import com.directions.route.RoutingListener;
 import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
@@ -49,10 +43,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import timber.log.Timber;
 
-public class FavoritesActivity extends ActionBarActivity implements FavoritesAdapter.ItemClickedCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener,
+public class FavoritesActivity extends LocationActivity implements FavoritesAdapter.ItemClickedCallback,
         RoutingListener {
 
     private static final int ADD_FAV_REQ_CODE = 324;
@@ -62,11 +53,6 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     private LinearLayoutManager layoutManager;
     private List<Favorite> favoritesList;
     private Timer timer = new Timer();
-
-    protected LatLng position;
-
-    private GoogleApiClient locationClient;
-    private LocationRequest locationRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,11 +103,6 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     private void getPredictionsForFavStop(final List<Favorite> favoritesList) {
         if (favoritesList.size() == 0) {
             adapter.updateList(this.favoritesList);
-
-            /*Routing routing = new Routing(Routing.TravelMode.WALKING);
-            routing.registerListener(this);
-            Marker marker = currentlyVisibleMarkers.get(Integer.parseInt(order) - 1);
-            routing.execute(new LatLng(42.3670981, -71.0800857), marker.getPosition());*/
             return;
         }
 
@@ -195,18 +176,6 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
         timer.cancel();
         MbtaBusTrackerApplication.bus.unregister(this);
         super.onPause();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        locationClient.connect();
-    }
-
-    @Override
-    protected void onDestroy() {
-        locationClient.disconnect();
-        super.onDestroy();
     }
 
     @Override
@@ -284,31 +253,6 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-        locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(2 * 60 * 1000); // Update location every second
-
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                locationClient, locationRequest, this);
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        position = new LatLng(location.getLatitude(), location.getLongitude());
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
-
-    @Override
     public void onRoutingFailure() {
 
     }
@@ -320,5 +264,9 @@ public class FavoritesActivity extends ActionBarActivity implements FavoritesAda
 
     @Override
     public void onRoutingSuccess(PolylineOptions mPolyOptions, com.directions.route.Route route) {
+        /*String stopName = favoritesList.get(1).getStopName();
+        stopName += " (" + route.getDurationText() + ")";
+        favoritesList.get(1).setStopName(stopName);
+        adapter.updateList(this.favoritesList);*/
     }
 }

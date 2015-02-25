@@ -3,10 +3,10 @@ package com.ckudlack.mbtabustracker.activities;
 import android.app.Fragment;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.ckudlack.mbtabustracker.Constants;
 import com.ckudlack.mbtabustracker.OttoBusEvent;
@@ -15,8 +15,10 @@ import com.ckudlack.mbtabustracker.application.MbtaBusTrackerApplication;
 import com.ckudlack.mbtabustracker.database.DBAdapter;
 import com.ckudlack.mbtabustracker.database.Schema;
 import com.ckudlack.mbtabustracker.models.Direction;
+import com.ckudlack.mbtabustracker.models.Mode;
 import com.ckudlack.mbtabustracker.models.RouteScheduleWrapper;
 import com.ckudlack.mbtabustracker.models.RouteStop;
+import com.ckudlack.mbtabustracker.models.StopPredictionWrapper;
 import com.ckudlack.mbtabustracker.models.StopTime;
 import com.ckudlack.mbtabustracker.models.Trip;
 import com.ckudlack.mbtabustracker.models.Vehicle;
@@ -51,10 +53,12 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import timber.log.Timber;
 
-public class RouteMapActivity extends ActionBarActivity implements RoutingListener {
+public class RouteMapActivity extends LocationActivity implements RoutingListener {
 
     private Fragment mapFragment;
     private GoogleMap map;
+    private TextView busPredView;
+    private TextView timetoDestView;
 
     private DBAdapter dbAdapter;
     private HashMap<String, Marker> currentlyVisibleMarkers = new HashMap<>();
@@ -73,6 +77,9 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
         mapFragment = getFragmentManager().findFragmentById(R.id.route_map);
         map = ((MapFragment) mapFragment).getMap();
         map.setMyLocationEnabled(true);
+
+        busPredView = (TextView) findViewById(R.id.next_bus_pred);
+        timetoDestView = (TextView) findViewById(R.id.time_to_stop);
 
         UiSettings uiSettings = map.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
@@ -94,6 +101,19 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
         });
 
         getSupportActionBar().setTitle(getIntent().getStringExtra(Constants.STOP_NAME_KEY));
+
+        RetrofitManager.getRealtimeService().getPredictionsByStop(RetrofitManager.API_KEY, RetrofitManager.FORMAT, stopId, new Callback<StopPredictionWrapper>() {
+            @Override
+            public void success(StopPredictionWrapper stopPredictionWrapper, Response response) {
+                Timber.d("Success!");
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.PredictionsByStopReturnEvent(stopPredictionWrapper, null));
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
+            }
+        });
     }
 
     private void getScheduledStops() {
@@ -156,7 +176,7 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
         Routing routing = new Routing(Routing.TravelMode.WALKING);
         routing.registerListener(this);
         Marker marker = currentlyVisibleMarkers.get(stopId);
-        routing.execute(new LatLng(42.3670981, -71.0800857), marker.getPosition());
+        routing.execute(lastLocation, marker.getPosition());
     }
 
     private void zoomToFavoritedStop() {
@@ -187,6 +207,44 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
             markerOptions.icon(icon);
             Marker marker = map.addMarker(markerOptions);
             busMarkers.add(marker);
+        }
+    }
+
+    @Subscribe
+    public void predictionsByStopReturned(OttoBusEvent.PredictionsByStopReturnEvent event) {
+        List<Mode> modes = event.getPredictionWrapper().getMode();
+        Mode busMode = null;
+        for (Mode m : modes) {
+            if (m.getRouteType().equals(Constants.ROUTE_TYPE_BUS)) {
+                busMode = m;
+                break;
+            }
+        }
+
+        //TODO: Make this more modular, so it uses similar code to FavoritesActivity
+        if (busMode != null) {
+            List<com.ckudlack.mbtabustracker.models.Route> routes = busMode.getRoute();
+            for (com.ckudlack.mbtabustracker.models.Route r : routes) {
+                if (r.getRouteId().equals(routeId)) {
+                    Direction direction;
+                    if (r.getDirection().size() > 1) {
+                        direction = r.getDirection().get(Integer.parseInt(this.direction));
+                    } else {
+                        direction = r.getDirection().get(0);
+                    }
+
+                    List<Trip> trips = direction.getTrip();
+                    StringBuilder sb = new StringBuilder();
+                    Trip t = trips.get(0);
+
+                    int timeRemaining = (int) (Integer.parseInt(t.getPreAway()) / 60f);
+                    sb.append(String.valueOf(timeRemaining));
+                    sb.append(" mins");
+
+                    busPredView.setText(getString(R.string.next_bus_in) + " " + sb.toString());
+                    break;
+                }
+            }
         }
     }
 
@@ -260,5 +318,7 @@ public class RouteMapActivity extends ActionBarActivity implements RoutingListen
         polyoptions.width(10);
         polyoptions.addAll(mPolyOptions.getPoints());
         map.addPolyline(polyoptions);
+
+        timetoDestView.setText(getString(R.string.time_to_dest) + " " + route.getDurationText());
     }
 }

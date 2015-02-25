@@ -11,4 +11,6 @@
     <string name="title_activity_route_map">RouteMapActivity</string>
     <string name="action_bar_title_add_route">Add a Route</string>
     <string name="action_bar_title_favorites">Favorites</string>
+    <string name="next_bus_in">Next Bus in:</string>
+    <string name="time_to_dest">Time to Stop:</string>
 </resources>
