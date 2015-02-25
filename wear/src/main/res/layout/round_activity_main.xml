@@ -1,9 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context=".MainActivity" tools:deviceIds="wear_round">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grey"
+    android:padding="10dp"
+    tools:context=".MainActivity"
+    tools:deviceIds="wear_round">
 
-    <TextView android:id="@+id/text" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" android:text="@string/hello_round" />
+    <LinearLayout
+        android:id="@+id/bus_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/bus_image"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:alpha="0.6"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/bus_small"
+            android:tint="@color/blue" />
+
+        <TextView
+            android:id="@+id/bus_prediction"
+            android:layout_gravity="left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@+id/bus_image"
+            android:layout_below="@+id/bus_image"
+            android:layout_marginTop="10dp"
+            android:gravity="center_horizontal"
+            android:text="12"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/bus_prediction"
+            android:layout_below="@+id/bus_prediction"
+            android:text="MINS" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/stop"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerInParent="true"
+        android:src="@mipmap/ic_action_place"
+        android:tint="@color/green" />
+
+    <ImageView
+        android:id="@+id/path_bus"
+        android:layout_width="fill_parent"
+        android:layout_height="10dp"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/stop"
+        android:layout_toRightOf="@+id/bus_layout"
+        android:background="@drawable/dashed_line" />
+
+    <LinearLayout
+        android:id="@+id/user_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/walking_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleX="-1"
+            android:src="@mipmap/ic_action"
+            android:tint="@color/blue" />
+
+        <TextView
+            android:id="@+id/time_to_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/walking_icon"
+            android:layout_below="@id/walking_icon"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="5dp"
+            android:gravity="center_horizontal"
+            android:text="14"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@+id/time_to_stop"
+            android:layout_below="@+id/time_to_stop"
+            android:text="MINS" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/path_user"
+        android:layout_width="fill_parent"
+        android:layout_height="10dp"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/user_layout"
+        android:layout_toRightOf="@+id/stop"
+        android:background="@drawable/dashed_line" />
+
 </RelativeLayout>

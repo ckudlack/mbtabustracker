@@ -176,7 +176,7 @@ public class RouteMapActivity extends LocationActivity implements RoutingListene
         Routing routing = new Routing(Routing.TravelMode.WALKING);
         routing.registerListener(this);
         Marker marker = currentlyVisibleMarkers.get(stopId);
-        routing.execute(lastLocation, marker.getPosition());
+        routing.execute(new LatLng(map.getMyLocation().getLatitude(), map.getMyLocation().getLongitude()), marker.getPosition());
     }
 
     private void zoomToFavoritedStop() {
@@ -314,7 +314,7 @@ public class RouteMapActivity extends LocationActivity implements RoutingListene
     public void onRoutingSuccess(PolylineOptions mPolyOptions, Route route) {
         Timber.d("Success");
         PolylineOptions polyoptions = new PolylineOptions();
-        polyoptions.color(Color.BLUE);
+        polyoptions.color(Color.RED);
         polyoptions.width(10);
         polyoptions.addAll(mPolyOptions.getPoints());
         map.addPolyline(polyoptions);

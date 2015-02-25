@@ -19,6 +19,24 @@
             android:textColor="@android:color/white"
             android:textSize="22sp" />
 
+        <ImageButton
+            android:id="@+id/close_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="5dp"
+            android:background="@android:color/transparent"
+            android:padding="5dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_action_cancel" />
+
+        <Button
+            android:id="@+id/link_to_watch_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_toLeftOf="@+id/close_button"
+            android:text="W" />
+
         <TextView
             android:id="@+id/stop_name"
             android:layout_width="wrap_content"
