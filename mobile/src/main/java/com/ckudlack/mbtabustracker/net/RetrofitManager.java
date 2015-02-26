@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import retrofit.Callback;
+import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
@@ -35,6 +36,13 @@ public class RetrofitManager {
                 }
             })
             .setLogLevel(RestAdapter.LogLevel.FULL)
+            .setRequestInterceptor(new RequestInterceptor() {
+                @Override
+                public void intercept(RequestFacade request) {
+                    request.addQueryParam("api_key", API_KEY);
+                    request.addQueryParam("format", FORMAT);
+                }
+            })
             .build();
 
     private static RestAdapter MBTA_FEED_INFO_REST_ADAPTER = new RestAdapter.Builder()
@@ -64,22 +72,22 @@ public class RetrofitManager {
     public interface MbtaService {
 
         @GET("/predictionsbystop")
-        void getPredictionsByStop(@Query("api_key") String apiKey, @Query("format") String format, @Query("stop") String stopId, Callback<StopPredictionWrapper> callback);
+        void getPredictionsByStop(@Query("stop") String stopId, Callback<StopPredictionWrapper> callback);
 
         @GET("/stopsbyroute")
-        void getStopsByRoute(@Query("api_key") String apiKey, @Query("format") String format, @Query("route") String routeId, Callback<StopsByRouteWrapper> callback);
+        void getStopsByRoute(@Query("route") String routeId, Callback<StopsByRouteWrapper> callback);
 
         @GET("/routes")
-        void getAllRoutes(@Query("api_key") String apiKey, @Query("format") String format, Callback<AllRoutesWrapper> callback);
+        void getAllRoutes(Callback<AllRoutesWrapper> callback);
 
         @GET("/stopsbylocation")
-        void getStopsByLocation(@Query("api_key") String apiKey, @Query("format") String format, @Query("lat") float latitude, @Query("lon") float longitude, Callback<StopsNearMeWrapper> callback);
+        void getStopsByLocation(@Query("lat") float latitude, @Query("lon") float longitude, Callback<StopsNearMeWrapper> callback);
 
         @GET("/scheduleByRoute")
-        void getScheduleByRoute(@Query("api_key") String apiKey, @Query("format") String format, @Query("route") String routeId, @Query("direction") String direction, Callback<RouteScheduleWrapper> callback);
+        void getScheduleByRoute(@Query("route") String routeId, @Query("direction") String direction, Callback<RouteScheduleWrapper> callback);
 
         @GET("/vehiclesByRoute")
-        void getVehiclesByRoute(@Query("api_key") String apiKey, @Query("format") String format, @Query("route") String routeId, Callback<VehicleInfoWrapper> callback);
+        void getVehiclesByRoute(@Query("route") String routeId, Callback<VehicleInfoWrapper> callback);
 
     }
 

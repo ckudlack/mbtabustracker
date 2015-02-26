@@ -2,4 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="marker_color">#ff157938</color>
+    <color name="grey">#ff424242</color>
+
 </resources>

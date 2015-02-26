@@ -100,6 +100,40 @@ public class FavoritesActivity extends LocationActivity implements FavoritesAdap
         locationClient.connect();
     }
 
+    /*private void buildNotification(Favorite favorite) {
+        int notificationId = 123;
+// Build intent for notification content
+*//*        Intent viewIntent = new Intent(this, ViewEventActivity.class);
+        viewIntent.putExtra(EXTRA_EVENT_ID, eventId);
+        PendingIntent viewPendingIntent =
+                PendingIntent.getActivity(this, 0, viewIntent, 0);*//*
+
+        Intent notificationIntent = new Intent(this, WearDisplayActivity.class);
+        PendingIntent notificationPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
+        wearableExtender.setDisplayIntent(notificationPendingIntent);
+
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setLargeIcon(BitmapFactory.decodeResource(
+                                getResources(), R.mipmap.ic_launcher))
+                        .setContentTitle("Bus Tracker")
+                        .setContentText("Event Text")
+                        .extend(wearableExtender);
+//                        .setContentIntent(viewPendingIntent);
+
+
+// Get an instance of the NotificationManager service
+        NotificationManagerCompat notificationManager =
+                NotificationManagerCompat.from(this);
+
+// Build the notification and issues it with notification manager.
+        notificationManager.notify(notificationId, notificationBuilder.build());
+    }*/
+
     private void getPredictionsForFavStop(final List<Favorite> favoritesList) {
         if (favoritesList.size() == 0) {
             adapter.updateList(this.favoritesList);
@@ -107,7 +141,7 @@ public class FavoritesActivity extends LocationActivity implements FavoritesAdap
         }
 
         final Favorite favorite = favoritesList.get(0);
-        RetrofitManager.getRealtimeService().getPredictionsByStop(RetrofitManager.API_KEY, RetrofitManager.FORMAT, favorite.getStopId(), new Callback<StopPredictionWrapper>() {
+        RetrofitManager.getRealtimeService().getPredictionsByStop(favorite.getStopId(), new Callback<StopPredictionWrapper>() {
             @Override
             public void success(StopPredictionWrapper stopPredictionWrapper, Response response) {
                 Timber.d("Success!");
@@ -243,6 +277,10 @@ public class FavoritesActivity extends LocationActivity implements FavoritesAdap
     @Override
     public void onListItemClicked(int position) {
         Favorite favorite = favoritesList.get(position);
+
+//        buildNotification(favorite);
+
+
         Intent intent = new Intent(this, RouteMapActivity.class);
         intent.putExtra(Constants.ROUTE_ID_KEY, favorite.getRouteId());
         intent.putExtra(Constants.DIRECTION_KEY, favorite.getDirectionId());

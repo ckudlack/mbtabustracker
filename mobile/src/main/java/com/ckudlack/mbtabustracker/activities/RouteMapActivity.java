@@ -102,7 +102,7 @@ public class RouteMapActivity extends LocationActivity implements RoutingListene
 
         getSupportActionBar().setTitle(getIntent().getStringExtra(Constants.STOP_NAME_KEY));
 
-        RetrofitManager.getRealtimeService().getPredictionsByStop(RetrofitManager.API_KEY, RetrofitManager.FORMAT, stopId, new Callback<StopPredictionWrapper>() {
+        RetrofitManager.getRealtimeService().getPredictionsByStop(stopId, new Callback<StopPredictionWrapper>() {
             @Override
             public void success(StopPredictionWrapper stopPredictionWrapper, Response response) {
                 Timber.d("Success!");
@@ -117,7 +117,7 @@ public class RouteMapActivity extends LocationActivity implements RoutingListene
     }
 
     private void getScheduledStops() {
-        RetrofitManager.getRealtimeService().getScheduleByRoute(RetrofitManager.API_KEY, RetrofitManager.FORMAT, routeId, direction, new Callback<RouteScheduleWrapper>() {
+        RetrofitManager.getRealtimeService().getScheduleByRoute(routeId, direction, new Callback<RouteScheduleWrapper>() {
             @Override
             public void success(RouteScheduleWrapper routeScheduleWrapper, Response response) {
                 Direction direction = routeScheduleWrapper.getDirection().get(0);
@@ -134,7 +134,7 @@ public class RouteMapActivity extends LocationActivity implements RoutingListene
     }
 
     private void getVehicleLocations() {
-        RetrofitManager.getRealtimeService().getVehiclesByRoute(RetrofitManager.API_KEY, RetrofitManager.FORMAT, routeId, new Callback<VehicleInfoWrapper>() {
+        RetrofitManager.getRealtimeService().getVehiclesByRoute(routeId, new Callback<VehicleInfoWrapper>() {
             @Override
             public void success(VehicleInfoWrapper vehicleInfoWrapper, Response response) {
                 List<Direction> directions = vehicleInfoWrapper.getDirection();

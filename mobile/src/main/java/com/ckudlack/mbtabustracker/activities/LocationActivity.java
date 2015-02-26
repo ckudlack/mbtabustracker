@@ -3,6 +3,7 @@ package com.ckudlack.mbtabustracker.activities;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -53,8 +54,12 @@ public class LocationActivity extends ActionBarActivity implements GoogleApiClie
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(2 * 60 * 1000); // Update location every second
 
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                locationClient, locationRequest, this);
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    locationClient, locationRequest, this);
+        } catch (IllegalStateException e) {
+            Toast.makeText(this, "Google Location Error", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

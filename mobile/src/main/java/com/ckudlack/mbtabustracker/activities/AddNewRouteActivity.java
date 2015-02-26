@@ -199,7 +199,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
     }
 
     private void getScheduledStops() {
-        RetrofitManager.getRealtimeService().getScheduleByRoute(RetrofitManager.API_KEY, RetrofitManager.FORMAT, currentRoute.getRouteId(), getDirectionString(), new Callback<RouteScheduleWrapper>() {
+        RetrofitManager.getRealtimeService().getScheduleByRoute(currentRoute.getRouteId(), getDirectionString(), new Callback<RouteScheduleWrapper>() {
             @Override
             public void success(RouteScheduleWrapper routeScheduleWrapper, Response response) {
                 Direction direction = routeScheduleWrapper.getDirection().get(0);
@@ -266,7 +266,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
     }
 
     private void getAllRoutes() {
-        RetrofitManager.getRealtimeService().getAllRoutes(RetrofitManager.API_KEY, RetrofitManager.FORMAT, new Callback<AllRoutesWrapper>() {
+        RetrofitManager.getRealtimeService().getAllRoutes(new Callback<AllRoutesWrapper>() {
             @Override
             public void success(AllRoutesWrapper allRoutesWrapper, Response response) {
                 Timber.d("Success!");
@@ -282,7 +282,7 @@ public class AddNewRouteActivity extends ActionBarActivity {
     }
 
     private void getStopsForRoute(final String routeId) {
-        RetrofitManager.getRealtimeService().getStopsByRoute(RetrofitManager.API_KEY, RetrofitManager.FORMAT, routeId, new Callback<StopsByRouteWrapper>() {
+        RetrofitManager.getRealtimeService().getStopsByRoute(routeId, new Callback<StopsByRouteWrapper>() {
             @Override
             public void success(StopsByRouteWrapper stopsByRouteWrapper, Response response) {
                 Timber.d("Success!");
