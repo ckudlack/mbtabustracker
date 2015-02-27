@@ -132,6 +132,38 @@ public class Schema {
         };
     }
 
+    public static class FavoritesTable extends Table {
+        public static final String TABLE_NAME = "favorites";
+        public static final String STOP_ID = "stop_id";
+        public static final String ROUTE_ID = "route_id";
+        public static final String DIRECTION_ID = "direction_id";
+        public static final String STOP_NAME = "stop_name";
+        public static final String ROUTE_NAME = "route_name";
+        public static final String STOP_ORDER = "stop_order";
+        public static final String STOP_LONG = "stop_long";
+        public static final String STOP_LAT = "stop_lat";
+        public static final String PREDICTIONS = "predictions";
+        public static final String DIRECTION_NAME = "stop_direction";
+
+        public static final String CREATE_TABLE_SQL =
+                buildCreateSQL(TABLE_NAME,
+                        STOP_ID + " text not null, " +
+                                STOP_NAME + " text not null, " +
+                                DIRECTION_NAME + " text not null, " +
+                                ROUTE_ID + " text not null, " +
+                                DIRECTION_ID + " text not null, " +
+                                ROUTE_NAME + " text not null, " +
+                                STOP_LAT + " double not null, " +
+                                STOP_ORDER + " text not null, " +
+                                PREDICTIONS + " text, " +
+                                STOP_LONG + " double not null"
+                );
+
+        public static final String[] ALL_COLUMNS = new String[]{
+                ID_COL, STOP_ID, STOP_NAME, STOP_LAT, STOP_LONG, ROUTE_ID, ROUTE_NAME, DIRECTION_ID, DIRECTION_NAME, PREDICTIONS, STOP_ORDER
+        };
+    }
+
     public static class TripsTable extends Table {
         public static final String TABLE_NAME = "trips";
         public static final String ROUTE_ID = "route_id";

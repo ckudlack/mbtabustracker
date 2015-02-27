@@ -1,9 +1,7 @@
 package com.ckudlack.mbtabustracker.activities;
 
 import android.app.Fragment;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -50,16 +48,13 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -216,9 +211,10 @@ public class AddNewRouteActivity extends ActionBarActivity {
     }
 
     private void addStopToFavorites() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        Set<String> stringSet;
-        stringSet = sharedPreferences.getStringSet(Constants.FAVORITES_KEY, null);
+        if (dbAdapter.containsFavorite(currentRoute.getRouteId(), currentStop.getStopId())) {
+            Toast.makeText(this, getString(R.string.duplicate_fav), Toast.LENGTH_LONG).show();
+            return;
+        }
 
         Favorite favorite = new Favorite();
         favorite.setStopId(currentStop.getStopId());
@@ -231,21 +227,8 @@ public class AddNewRouteActivity extends ActionBarActivity {
         favorite.setLatitude(Double.parseDouble(currentStop.getStopLat()));
         favorite.setLongitude(Double.parseDouble(currentStop.getStopLon()));
 
-        Gson gson = new Gson();
-        String fav = gson.toJson(favorite, Favorite.class);
-
-        List<String> strings = new ArrayList<>();
-
-        if (stringSet == null || stringSet.size() == 0) {
-            strings.add(fav);
-        } else {
-            for (String aStringSet : stringSet) {
-                strings.add(aStringSet);
-            }
-            strings.add(fav);
-        }
-
-        sharedPreferences.edit().putStringSet(Constants.FAVORITES_KEY, new HashSet<>(strings)).apply();
+        dbAdapter.acquire(favorite);
+        favorite.persistToDatabase();
         Toast.makeText(this, getString(R.string.route_added), Toast.LENGTH_LONG).show();
     }
 

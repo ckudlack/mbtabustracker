@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -12,10 +13,17 @@ import com.ckudlack.mbtabustracker.models.Favorite;
 
 import java.util.List;
 
+
+/**
+ * This should be extending CursorAdapter, but since I made it this way originally because data was coming
+ * from shared preferences, and later changed to storing it in the DB, I'm not going to change it.
+ */
 public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.ViewHolder> {
 
     public interface ItemClickedCallback {
         public void onListItemClicked(int position);
+
+        public void onCloseButtonClicked(int position);
     }
 
     List<Favorite> favorites;
@@ -32,6 +40,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
         TextView predictionTimes;
         TextView stopName;
         RelativeLayout rootView;
+        ImageButton closeButton;
 
         public ViewHolder(View v) {
             super(v);
@@ -41,6 +50,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             predictionTimes = (TextView) v.findViewById(R.id.prediction_times);
             stopName = (TextView) v.findViewById(R.id.stop_name);
             rootView = (RelativeLayout) v.findViewById(R.id.card_root_view);
+            closeButton = (ImageButton) v.findViewById(R.id.close_button);
         }
     }
 
@@ -63,6 +73,12 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             @Override
             public void onClick(View v) {
                 callback.onListItemClicked(i);
+            }
+        });
+        viewHolder.closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callback.onCloseButtonClicked(i);
             }
         });
     }

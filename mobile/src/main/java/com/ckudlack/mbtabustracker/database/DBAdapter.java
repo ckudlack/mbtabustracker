@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.ckudlack.mbtabustracker.models.Favorite;
 import com.ckudlack.mbtabustracker.models.FeedInfo;
 import com.ckudlack.mbtabustracker.models.RouteStop;
 
@@ -172,6 +173,7 @@ public class DBAdapter {
             db.execSQL(Schema.StopsTable.CREATE_TABLE_SQL);
             db.execSQL(Schema.RouteStopsTable.CREATE_TABLE_SQL);
             db.execSQL(Schema.StopTimesTable.CREATE_TABLE_SQL);
+            db.execSQL(Schema.FavoritesTable.CREATE_TABLE_SQL);
             Timber.d("Tables created!");
         }
 
@@ -182,6 +184,7 @@ public class DBAdapter {
             db.execSQL("DROP TABLE IF EXISTS " + Schema.StopsTable.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + Schema.RouteStopsTable.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + Schema.StopTimesTable.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + Schema.FavoritesTable.TABLE_NAME);
         }
 
         private static void runMigrations(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -333,5 +336,29 @@ public class DBAdapter {
             cursor.close();
             return null;
         }
+    }
+
+    public List<Favorite> getFavorites() {
+        List<Favorite> favorites = new ArrayList<>();
+        Cursor cursor = db.query(Schema.FavoritesTable.TABLE_NAME, Schema.FavoritesTable.ALL_COLUMNS,
+                null, null, null, null, null);
+        try {
+            while (cursor.moveToNext()) {
+                Favorite favorite = new Favorite();
+                favorite.buildFromCursor(cursor, this);
+                favorites.add(favorite);
+            }
+        } finally {
+            cursor.close();
+        }
+        return favorites;
+    }
+
+    public boolean containsFavorite(String routeId, String stopId) {
+        Cursor cursor = db.query(Schema.FavoritesTable.TABLE_NAME, Schema.FavoritesTable.ALL_COLUMNS,
+                Schema.FavoritesTable.STOP_ID + "=\'" + stopId + "\' AND " + Schema.FavoritesTable.ROUTE_ID + "=\'" + routeId + "\'", null, null, null, null);
+        boolean containsFav = cursor.getCount() > 0;
+        cursor.close();
+        return containsFav;
     }
 }

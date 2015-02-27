@@ -151,6 +151,19 @@ public class RouteMapActivity extends LocationActivity implements RoutingListene
                 MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
             }
         });
+
+        RetrofitManager.getRealtimeService().getPredictionsByStop(stopId, new Callback<StopPredictionWrapper>() {
+            @Override
+            public void success(StopPredictionWrapper stopPredictionWrapper, Response response) {
+                Timber.d("Success!");
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.PredictionsByStopReturnEvent(stopPredictionWrapper, null));
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                MbtaBusTrackerApplication.bus.post(new OttoBusEvent.RetrofitFailureEvent(error));
+            }
+        });
     }
 
     @Subscribe

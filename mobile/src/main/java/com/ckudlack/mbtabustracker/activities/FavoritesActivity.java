@@ -1,8 +1,6 @@
 package com.ckudlack.mbtabustracker.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +14,7 @@ import com.ckudlack.mbtabustracker.R;
 import com.ckudlack.mbtabustracker.SpacesItemDecoration;
 import com.ckudlack.mbtabustracker.adapters.FavoritesAdapter;
 import com.ckudlack.mbtabustracker.application.MbtaBusTrackerApplication;
+import com.ckudlack.mbtabustracker.database.DBAdapter;
 import com.ckudlack.mbtabustracker.models.Direction;
 import com.ckudlack.mbtabustracker.models.Favorite;
 import com.ckudlack.mbtabustracker.models.Mode;
@@ -28,13 +27,9 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.gson.Gson;
 import com.squareup.otto.Subscribe;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -53,6 +48,7 @@ public class FavoritesActivity extends LocationActivity implements FavoritesAdap
     private LinearLayoutManager layoutManager;
     private List<Favorite> favoritesList;
     private Timer timer = new Timer();
+    private DBAdapter dbAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +56,7 @@ public class FavoritesActivity extends LocationActivity implements FavoritesAdap
         setContentView(R.layout.activity_favorites);
 
         setupLocationServices();
+        dbAdapter = MbtaBusTrackerApplication.getDbAdapter();
 
         FloatingActionButton button = (FloatingActionButton) findViewById(R.id.floating_button);
         button.setSize(FloatingActionButton.SIZE_NORMAL);
@@ -83,7 +80,7 @@ public class FavoritesActivity extends LocationActivity implements FavoritesAdap
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addItemDecoration(new SpacesItemDecoration(50));
 
-        favoritesList = getFavoritesFromSharedPrefs();
+        favoritesList = dbAdapter.getFavorites();
 
         adapter = new FavoritesAdapter(favoritesList, this);
         recyclerView.setAdapter(adapter);
@@ -157,29 +154,9 @@ public class FavoritesActivity extends LocationActivity implements FavoritesAdap
         });
     }
 
-
-    private List<Favorite> getFavoritesFromSharedPrefs() {
-        List<Favorite> favoritesList = new ArrayList<>();
-
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Set<String> favorites = sharedPrefs.getStringSet(Constants.FAVORITES_KEY, null);
-        if (favorites != null) {
-            Iterator<String> iterator = favorites.iterator();
-
-            while ((iterator.hasNext())) {
-                String fav = iterator.next();
-                Gson gson = new Gson();
-
-                Favorite favorite = gson.fromJson(fav, Favorite.class);
-                favoritesList.add(favorite);
-            }
-        }
-        return favoritesList;
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        favoritesList = getFavoritesFromSharedPrefs();
+        favoritesList = dbAdapter.getFavorites();
         getPredictionsForFavStop(favoritesList);
     }
 
@@ -288,6 +265,15 @@ public class FavoritesActivity extends LocationActivity implements FavoritesAdap
         intent.putExtra(Constants.STOP_NAME_KEY, favorite.getStopName());
         intent.putExtra(Constants.STOP_KEY, favorite.getStopId());
         startActivity(intent);
+    }
+
+    @Override
+    public void onCloseButtonClicked(int position) {
+        adapter.notifyItemRemoved(position);
+        favoritesList.get(position).deleteFromDatabase();
+        favoritesList = dbAdapter.getFavorites(); //reload them
+
+        //TODO: Fix concurrent modification exception when predictions are being updated and a favorite is removed
     }
 
     @Override
